@@ -1,6 +1,6 @@
 {
   "name": "create-ax-project",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Multi-AI Workflow Pipeline - Create new projects with 10-stage development workflow",
   "type": "module",
   "bin": {
@@ -25,17 +25,17 @@
   "author": "znehraks@gmail.com",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.12.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/znehraks/ax-templates"
+    "url": "https://github.com/znehraks/ax-templates-v3"
   },
   "bugs": {
-    "url": "https://github.com/znehraks/ax-templates/issues"
+    "url": "https://github.com/znehraks/ax-templates-v3/issues"
   },
-  "homepage": "https://github.com/znehraks/ax-templates#readme",
+  "homepage": "https://github.com/znehraks/ax-templates-v3#readme",
   "dependencies": {
-    "@inquirer/prompts": "^8.2.0"
+    "@inquirer/prompts": "^7.10.1"
   }
 }
