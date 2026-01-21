@@ -1,0 +1,64 @@
+# Stage 03: Planning Configuration
+
+stage:
+  id: "03-planning"
+  name: "Planning"
+  description: "시스템 아키텍처 및 기술 스택 결정"
+
+models:
+  primary: "gemini"
+  secondary: null
+  collaboration: null
+
+execution:
+  mode: "plan"
+  container: false
+  sandbox: false
+  timeout: 3600
+
+inputs:
+  required:
+    - name: "../02-research/outputs/tech_research.md"
+    - name: "../02-research/outputs/feasibility_report.md"
+    - name: "../02-research/HANDOFF.md"
+  optional:
+    - name: "../01-brainstorm/outputs/requirements_analysis.md"
+
+outputs:
+  required:
+    - name: "architecture.md"
+      description: "시스템 아키텍처"
+    - name: "tech_stack.md"
+      description: "기술 스택 결정"
+    - name: "project_plan.md"
+      description: "프로젝트 계획"
+    - name: "implementation.yaml"
+      description: "구현 규칙 설정 (Issue #10)"
+      template: "../../config/implementation.yaml.template"
+    - name: "HANDOFF.md"
+
+prompts:
+  - name: "architecture"
+    file: "prompts/architecture.md"
+    model: "gemini"
+  - name: "tech_stack_decision"
+    file: "prompts/tech_stack_decision.md"
+    model: "gemini"
+  - name: "project_plan"
+    file: "prompts/project_plan.md"
+    model: "gemini"
+
+completion:
+  checklist:
+    - "시스템 아키텍처 문서 작성"
+    - "기술 스택 최종 결정"
+    - "프로젝트 계획 수립"
+    - "마일스톤 3개 이상 정의"
+    - "HANDOFF.md 생성"
+
+transition:
+  next_stage: "04-ui-ux"
+  prerequisites:
+    - "02-research"
+  handoff_required: true
+  checkpoint_required: false

@@ -1,0 +1,92 @@
+# Stage 01: Brainstorming Configuration
+
+stage:
+  id: "01-brainstorm"
+  name: "Brainstorming"
+  description: "발산적 아이디어 생성 및 요구사항 탐색"
+
+# Model Assignment
+models:
+  primary: "gemini"
+  secondary: "claudecode"
+  collaboration: "parallel"  # parallel | sequential | handoff
+
+# AI 자동 호출 설정 (Issue #12 해결)
+auto_invoke:
+  enabled: true
+  model: "gemini"
+  trigger: "stage_start"
+  prompt_file: "prompts/ideation.md"
+  wrapper: "scripts/gemini-wrapper.sh"
+  required: true
+  message: "🤖 Gemini 자동 호출: 발산적 아이디어 생성 시작"
+
+# Execution Mode
+execution:
+  mode: "yolo"
+  container: true
+  sandbox: false
+  timeout: 3600  # 1 hour
+
+# Input/Output Definitions
+inputs:
+  required:
+    - name: "project_brief.md"
+      description: "프로젝트 개요 및 목표"
+      schema: null
+  optional:
+    - name: "user_requirements.md"
+      description: "초기 사용자 요구사항"
+    - name: "reference_materials/"
+      description: "참고 자료 디렉토리"
+
+outputs:
+  required:
+    - name: "ideas.md"
+      description: "브레인스토밍 아이디어 목록"
+      template: "templates/ideas.md"
+    - name: "requirements_analysis.md"
+      description: "요구사항 분석 결과"
+      template: "templates/requirements_analysis.md"
+    - name: "HANDOFF.md"
+      description: "다음 스테이지 인계 문서"
+      template: "HANDOFF.md.template"
+  optional:
+    - name: "personas.md"
+      description: "사용자 페르소나"
+    - name: "competitive_analysis.md"
+      description: "경쟁사 분석"
+
+# Prompts
+prompts:
+  - name: "ideation"
+    file: "prompts/ideation.md"
+    model: "gemini"
+    description: "발산적 아이디어 생성"
+  - name: "persona"
+    file: "prompts/persona.md"
+    model: "gemini"
+    description: "사용자 페르소나 생성"
+  - name: "requirements"
+    file: "prompts/requirements.md"
+    model: "claudecode"
+    description: "요구사항 분석 및 구조화"
+
+# Completion Criteria
+completion:
+  checklist:
+    - "최소 10개 아이디어 생성"
+    - "3개 이상 사용자 페르소나 정의"
+    - "요구사항 분석 문서 완성"
+    - "HANDOFF.md 생성"
+  validation:
+    min_ideas: 10
+    min_personas: 3
+    require_handoff: true
+
+# Transition
+transition:
+  next_stage: "02-research"
+  prerequisites: []
+  handoff_required: true
+  checkpoint_required: false

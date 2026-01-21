@@ -1,0 +1,111 @@
+{
+  "pipeline": {
+    "name": "Multi-AI Development Workflow",
+    "version": "1.0.0",
+    "project_name": "{{PROJECT_NAME}}",
+    "started_at": "{{STARTED_AT}}",
+    "updated_at": null,
+    "completed_at": null
+  },
+  "current_stage": null,
+  "stages": {
+    "01-brainstorm": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "02-research": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "03-planning": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "04-ui-ux": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "05-task-management": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "06-implementation": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "07-refactoring": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "08-qa": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "09-testing": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    },
+    "10-deployment": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "handoff_generated": false,
+      "checkpoint_id": null,
+      "outputs": [],
+      "errors": []
+    }
+  },
+  "checkpoints": [],
+  "context_snapshots": [],
+  "metadata": {
+    "total_tokens_used": 0,
+    "total_api_calls": 0,
+    "models_used": [],
+    "total_duration_hours": 0
+  }
+}

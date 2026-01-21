@@ -1,0 +1,229 @@
+# ax-templates HANDOFF Intelligence Configuration
+# Smart context extraction and summarization
+
+smart_handoff:
+  enabled: true
+  description: "자동 컨텍스트 추출 및 지능형 HANDOFF 생성"
+
+  # 자동 추출 설정
+  auto_extraction:
+    enabled: true
+    description: "HANDOFF에 포함할 정보 자동 추출"
+
+    extract_from:
+      completed_tasks:
+        enabled: true
+        format: "checklist"
+        include_timestamps: true
+
+      key_decisions:
+        enabled: true
+        format: "decision_log"
+        include_rationale: true
+        include_alternatives: false
+
+      modified_files:
+        enabled: true
+        format: "file_list"
+        include_diff_summary: true
+        max_files: 20
+
+      pending_issues:
+        enabled: true
+        format: "issue_list"
+        priority_order: true
+
+      ai_call_history:
+        enabled: true
+        format: "table"
+        include_prompts: false  # 토큰 절약
+        include_results_summary: true
+
+    # 추출 우선순위 (높을수록 먼저)
+    priority:
+      - blocking_issues: 100
+      - key_decisions: 90
+      - pending_issues: 80
+      - modified_files: 70
+      - completed_tasks: 60
+      - ai_call_history: 50
+
+  # 압축 설정
+  compression:
+    enabled: true
+    strategy: "semantic"
+    description: "의미 기반 컨텍스트 압축"
+
+    max_tokens: 4000
+    compression_ratio_target: 0.3  # 원본의 30%
+
+    preserve:
+      always:
+        - "critical_decisions"
+        - "blocking_issues"
+        - "current_task"
+      conditionally:
+        - "file_changes"
+        - "test_results"
+
+    summarization:
+      enabled: true
+      method: "extractive"  # extractive or abstractive
+      model: "claude"
+
+  # 컨텍스트 전달 최적화
+  context_transfer:
+    format: "structured_markdown"
+
+    sections:
+      critical:
+        title: "Critical Context"
+        max_tokens: 1500
+        content:
+          - blocking_issues
+          - critical_decisions
+
+      primary:
+        title: "Primary Context"
+        max_tokens: 1500
+        content:
+          - current_task_state
+          - key_file_changes
+          - next_steps
+
+      secondary:
+        title: "Secondary Context"
+        max_tokens: 1000
+        content:
+          - completed_tasks_summary
+          - ai_call_summary
+
+    # 다음 스테이지에 즉시 필요한 정보 하이라이트
+    highlight:
+      enabled: true
+      marker: "!!"
+      content:
+        - immediate_actions
+        - required_inputs
+
+# 컨텍스트 요약 설정
+contextual_summarization:
+  enabled: true
+  description: "스테이지별 맞춤 요약 생성"
+
+  strategies:
+    completed_tasks:
+      method: "bullet_points"
+      max_items: 10
+      grouping: "by_type"  # by_type, by_priority, chronological
+
+    file_changes:
+      method: "impact_analysis"
+      include:
+        - file_path
+        - change_type
+        - impact_scope
+      exclude_patterns:
+        - "*.log"
+        - "*.tmp"
+        - "node_modules/*"
+
+    decisions:
+      method: "structured"
+      format: |
+        **결정**: {{decision}}
+        **이유**: {{rationale}}
+        **영향**: {{impact}}
+
+    next_steps:
+      method: "actionable"
+      format: "numbered_list"
+      include_prerequisites: true
+
+  # 스테이지별 요약 초점
+  stage_focus:
+    "01-brainstorm":
+      emphasize: ["ideas", "requirements"]
+      de_emphasize: ["technical_details"]
+
+    "06-implementation":
+      emphasize: ["code_changes", "technical_decisions"]
+      de_emphasize: ["ideation"]
+
+    "08-qa":
+      emphasize: ["bugs", "test_results"]
+      de_emphasize: ["planning_details"]
+
+# HANDOFF 템플릿 설정
+templates:
+  default:
+    sections:
+      - name: "Summary"
+        required: true
+        auto_generate: true
+
+      - name: "Completed Tasks"
+        required: true
+        auto_generate: true
+
+      - name: "Key Decisions"
+        required: true
+        auto_generate: true
+
+      - name: "Modified Files"
+        required: false
+        auto_generate: true
+
+      - name: "Pending Issues"
+        required: false
+        auto_generate: true
+
+      - name: "Next Steps"
+        required: true
+        auto_generate: true
+
+      - name: "AI Call History"
+        required: false
+        auto_generate: true
+
+  # 스테이지 전환용 간소화 템플릿
+  compact:
+    max_tokens: 2000
+    sections:
+      - name: "Critical"
+        required: true
+      - name: "Next Actions"
+        required: true
+
+  # 세션 복구용 상세 템플릿
+  recovery:
+    max_tokens: 6000
+    sections:
+      - name: "Full Context"
+        required: true
+      - name: "Step-by-Step Recovery"
+        required: true
+
+# 품질 검증
+quality_assurance:
+  validation:
+    check_completeness: true
+    check_consistency: true
+    check_actionability: true
+
+  scoring:
+    enabled: true
+    criteria:
+      - clarity: 0.3
+      - completeness: 0.3
+      - actionability: 0.4
+
+    minimum_score: 0.7
+
+  auto_improve:
+    enabled: true
+    max_iterations: 2
+    improvement_prompts:
+      low_clarity: "이 섹션을 더 명확하게 다시 작성하세요."
+      low_completeness: "누락된 정보가 있습니다. 다음을 추가하세요: {{missing}}"
+      low_actionability: "다음 단계를 더 구체적인 액션으로 변환하세요."

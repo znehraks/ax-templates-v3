@@ -1,0 +1,61 @@
+# Stage 10: CI/CD & Deployment Configuration
+
+stage:
+  id: "10-deployment"
+  name: "CI/CD & Deployment"
+  description: "배포 파이프라인 설정 및 배포"
+
+models:
+  primary: "claudecode"
+  secondary: null
+  collaboration: null
+
+execution:
+  mode: "headless"
+  container: false
+  sandbox: false
+  timeout: 3600
+
+inputs:
+  required:
+    - name: "source_code/"
+    - name: "../09-testing/outputs/tests/"
+    - name: "../09-testing/outputs/test_report.md"
+    - name: "../09-testing/HANDOFF.md"
+
+outputs:
+  required:
+    - name: ".github/workflows/"
+      description: "GitHub Actions 워크플로우"
+    - name: "deployment_config/"
+      description: "배포 설정 파일"
+    - name: "deployment_log.md"
+      description: "배포 로그"
+    - name: "HANDOFF.md"
+
+prompts:
+  - name: "ci_setup"
+    file: "prompts/ci_setup.md"
+    model: "claudecode"
+  - name: "cd_setup"
+    file: "prompts/cd_setup.md"
+    model: "claudecode"
+  - name: "monitoring"
+    file: "prompts/monitoring.md"
+    model: "claudecode"
+
+completion:
+  checklist:
+    - "CI 파이프라인 설정"
+    - "CD 파이프라인 설정"
+    - "스테이징 배포 성공"
+    - "프로덕션 배포 성공"
+    - "모니터링 설정"
+    - "배포 문서 작성"
+
+transition:
+  next_stage: null  # 마지막 스테이지
+  prerequisites:
+    - "09-testing"
+  handoff_required: true
+  checkpoint_required: false

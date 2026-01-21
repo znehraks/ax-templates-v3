@@ -1,0 +1,102 @@
+# Stage Handoff: 02-research → 03-planning
+
+**생성일**: {{TIMESTAMP}}
+**생성자**: Claude
+**소요 시간**: {{DURATION}}
+
+---
+
+## 완료된 작업
+
+- [ ] 기술 스택 리서치
+- [ ] 시장 분석 (경쟁사 {{COMPETITOR_COUNT}}개)
+- [ ] 실현 가능성 평가
+- [ ] HANDOFF.md 생성
+
+---
+
+## 다음 에이전트를 위한 컨텍스트
+
+### 권장 기술 스택
+
+| 영역 | 선택 | 대안 | 선택 이유 |
+|------|------|------|-----------|
+| Frontend | {{FRONTEND}} | | |
+| Backend | {{BACKEND}} | | |
+| Database | {{DATABASE}} | | |
+| Infrastructure | {{INFRA}} | | |
+
+### 핵심 결정사항
+
+| 결정 | 이유 | 되돌릴 수 있음 |
+|------|------|----------------|
+| {{DECISION_1}} | {{REASON_1}} | Yes/No |
+
+### 실현 가능성 요약
+- **기술**: {{TECH_SCORE}}/10
+- **경제**: {{ECON_SCORE}}/10
+- **일정**: {{TIME_SCORE}}/10
+- **시장**: {{MARKET_SCORE}}/10
+- **종합**: {{TOTAL_SCORE}}/40
+- **권고**: {{RECOMMENDATION}}
+
+### 주요 리스크
+1. {{RISK_1}}
+2. {{RISK_2}}
+3. {{RISK_3}}
+
+---
+
+## 생성된 산출물
+
+| 파일 | 설명 |
+|------|------|
+| tech_research.md | 기술 스택 리서치 |
+| market_analysis.md | 시장 분석 |
+| feasibility_report.md | 실현 가능성 보고서 |
+
+---
+
+## 03-planning 스테이지 가이드
+
+### 즉시 실행할 작업
+1. 권장 기술 스택 기반 아키텍처 설계
+2. 시스템 컴포넌트 정의
+3. 데이터 모델 설계
+
+### 아키텍처 고려사항
+- {{ARCH_CONSIDERATION_1}}
+- {{ARCH_CONSIDERATION_2}}
+
+### 검증된 가정
+- {{VALIDATED_ASSUMPTION_1}}
+
+### 미검증 가정 (Planning에서 결정 필요)
+- {{UNVALIDATED_ASSUMPTION_1}}
+
+---
+
+## AI 호출 기록
+
+| AI | 호출 시간 | 프롬프트 | 결과 | 상태 |
+|----|----------|---------|------|------|
+| {{AI_1}} | {{TIME_1}} | {{PROMPT_1}} | {{OUTPUT_1}} | {{STATUS_1}} |
+| {{AI_2}} | {{TIME_2}} | {{PROMPT_2}} | {{OUTPUT_2}} | {{STATUS_2}} |
+
+> 설정: `config/ai_logging.yaml`
+
+---
+
+## 메타데이터
+
+```yaml
+stage: "02-research"
+status: "completed"
+next_stage: "03-planning"
+models_used:
+  - claude
+mcp_servers_used:
+  - firecrawl
+  - exa
+  - context7
+```

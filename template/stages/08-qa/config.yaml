@@ -1,0 +1,56 @@
+# Stage 08: QA Configuration
+
+stage:
+  id: "08-qa"
+  name: "QA"
+  description: "품질 보증 및 코드 리뷰"
+
+models:
+  primary: "claudecode"
+  secondary: null
+  collaboration: null
+
+execution:
+  mode: "plan_sandbox"
+  container: false
+  sandbox: true
+  timeout: 3600
+
+inputs:
+  required:
+    - name: "../07-refactoring/outputs/refactored_code/"
+    - name: "../07-refactoring/outputs/refactoring_report.md"
+    - name: "../07-refactoring/HANDOFF.md"
+
+outputs:
+  required:
+    - name: "qa_report.md"
+      description: "QA 보고서"
+    - name: "bug_fixes.md"
+      description: "버그 수정 내역"
+    - name: "HANDOFF.md"
+
+prompts:
+  - name: "code_review"
+    file: "prompts/code_review.md"
+    model: "claudecode"
+  - name: "security_audit"
+    file: "prompts/security_audit.md"
+    model: "claudecode"
+  - name: "bug_fix"
+    file: "prompts/bug_fix.md"
+    model: "claudecode"
+
+completion:
+  checklist:
+    - "코드 리뷰 완료"
+    - "보안 검사 통과"
+    - "식별된 버그 수정"
+    - "QA 보고서 작성"
+
+transition:
+  next_stage: "09-testing"
+  prerequisites:
+    - "07-refactoring"
+  handoff_required: true
+  checkpoint_required: false

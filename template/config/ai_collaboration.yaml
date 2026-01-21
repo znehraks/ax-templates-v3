@@ -1,0 +1,159 @@
+# ax-templates AI Collaboration Configuration
+# Multi-AI orchestration modes and collaboration strategies
+
+collaboration_modes:
+  # Parallel Execution: 동일 작업을 여러 AI로 동시 실행
+  parallel_execution:
+    description: "동일 작업을 여러 AI로 동시 실행하여 최상의 결과 선택"
+    enabled: true
+
+    stages:
+      - "01-brainstorm"
+      - "02-research"
+
+    models:
+      - "gemini"
+      - "claude"
+
+    merge_strategy:
+      type: "best_of_n"
+      selection_criteria:
+        - quality_score
+        - completeness
+        - creativity
+      require_human_review: true
+      auto_select_threshold: 0.85  # 85% 이상 점수 시 자동 선택
+
+  # Sequential Handoff: AI 간 순차 전달 (리뷰 체인)
+  sequential_handoff:
+    description: "AI 간 순차 전달로 결과물 점진적 개선"
+    enabled: true
+
+    chains:
+      code_review:
+        - model: "claude"
+          role: "초안 작성"
+          output: "draft.md"
+        - model: "gemini"
+          role: "창의적 개선"
+          output: "improved.md"
+        - model: "codex"
+          role: "기술 검증"
+          output: "verified.md"
+
+      planning_review:
+        - model: "gemini"
+          role: "아이디어 발산"
+          output: "ideas.md"
+        - model: "claude"
+          role: "실현 가능성 분석"
+          output: "analysis.md"
+        - model: "claude"
+          role: "최종 계획 수립"
+          output: "plan.md"
+
+    handoff_format:
+      include:
+        - context
+        - key_decisions
+        - modifications
+        - next_instructions
+
+  # Debate Mode: AI 간 토론으로 최적 결론 도출
+  debate_mode:
+    description: "AI 간 토론을 통해 다양한 관점에서 최적 결론 도출"
+    enabled: true
+
+    stages:
+      - "03-planning"
+      - "04-ui-ux"
+
+    participants:
+      - model: "claude"
+        role: "advocate"
+        perspective: "기술적 실현 가능성"
+      - model: "gemini"
+        role: "challenger"
+        perspective: "혁신적 접근법"
+
+    rules:
+      rounds: 3
+      max_tokens_per_turn: 2000
+      require_evidence: true
+      convergence_check: true
+
+    output:
+      format: "structured_summary"
+      include_dissenting_opinions: true
+      final_decision_method: "consensus"  # or "vote", "weighted"
+
+# Task Type Mappings for Collaboration
+task_collaboration_mapping:
+  ideation:
+    mode: "parallel_execution"
+    models: ["gemini", "claude"]
+
+  analysis:
+    mode: "sequential_handoff"
+    chain: "planning_review"
+
+  implementation:
+    mode: null  # Single AI preferred
+    primary: "claude"
+
+  review:
+    mode: "sequential_handoff"
+    chain: "code_review"
+
+  architecture:
+    mode: "debate_mode"
+    participants: ["claude", "gemini"]
+
+# Collaboration Output Handling
+output_handling:
+  storage_path: "state/collaborations/"
+
+  merge_strategies:
+    best_of_n:
+      description: "점수 기반 최고 결과 선택"
+      scoring:
+        - metric: "completeness"
+          weight: 0.3
+        - metric: "quality"
+          weight: 0.4
+        - metric: "creativity"
+          weight: 0.3
+
+    consensus:
+      description: "공통점 추출 + 차이점 병합"
+      conflict_resolution: "human_review"
+
+    synthesis:
+      description: "모든 결과물의 장점만 추출하여 새 결과물 생성"
+      synthesizer: "claude"
+
+# Collaboration Triggers
+triggers:
+  auto_collaborate:
+    on_low_confidence:
+      threshold: 0.7
+      action: "parallel_execution"
+
+    on_complex_task:
+      complexity_threshold: "high"
+      action: "debate_mode"
+
+    on_creative_task:
+      task_types: ["brainstorm", "design"]
+      action: "parallel_execution"
+
+# Resource Limits
+resource_limits:
+  max_concurrent_models: 2
+  total_token_budget_per_collaboration: 50000
+  timeout_per_model: 300  # 5 minutes
+
+  fallback:
+    on_timeout: "use_partial_results"
+    on_error: "single_model_fallback"
+    primary_fallback: "claude"

@@ -1,0 +1,96 @@
+# Stage Handoff: 08-qa → 09-testing
+
+**생성일**: {{TIMESTAMP}}
+**생성자**: ClaudeCode
+**소요 시간**: {{DURATION}}
+
+---
+
+## 완료된 작업
+
+- [ ] 코드 리뷰 완료
+- [ ] 보안 검사 ({{SECURITY_ISSUES}}개 이슈)
+- [ ] 버그 수정 ({{BUGS_FIXED}}개)
+- [ ] QA 보고서 작성
+- [ ] HANDOFF.md 생성
+
+---
+
+## 다음 에이전트를 위한 컨텍스트
+
+### QA 결과 요약
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| 코딩 표준 | {{STANDARD_STATUS}} | |
+| 보안 검사 | {{SECURITY_STATUS}} | |
+| 성능 | {{PERF_STATUS}} | |
+| 접근성 | {{A11Y_STATUS}} | |
+
+### 수정된 버그
+
+| ID | 심각도 | 설명 | 파일 |
+|----|--------|------|------|
+| BUG-001 | {{SEV_1}} | {{BUG_1}} | {{FILE_1}} |
+| BUG-002 | {{SEV_2}} | {{BUG_2}} | {{FILE_2}} |
+
+### 알려진 이슈 (미수정)
+- {{KNOWN_ISSUE_1}}: {{REASON_1}}
+
+### 테스트 필요 영역
+- {{TEST_AREA_1}}: 핵심 기능
+- {{TEST_AREA_2}}: 엣지 케이스
+- {{TEST_AREA_3}}: 통합 테스트
+
+---
+
+## 생성된 산출물
+
+| 파일 | 설명 |
+|------|------|
+| qa_report.md | QA 보고서 |
+| bug_fixes.md | 버그 수정 내역 |
+
+---
+
+## 09-testing 스테이지 가이드
+
+### 즉시 실행할 작업
+1. 단위 테스트 작성
+2. 통합 테스트 작성
+3. E2E 테스트 설정 (Playwright)
+
+### 테스트 커버리지 목표
+- 단위 테스트: 80% 이상
+- 통합 테스트: 핵심 플로우 100%
+- E2E: 주요 사용자 시나리오
+
+### 권장 테스트 프레임워크
+- Unit: {{UNIT_FRAMEWORK}}
+- E2E: Playwright
+
+---
+
+## AI 호출 기록
+
+| AI | 호출 시간 | 프롬프트 | 결과 | 상태 |
+|----|----------|---------|------|------|
+| {{AI_1}} | {{TIME_1}} | {{PROMPT_1}} | {{OUTPUT_1}} | {{STATUS_1}} |
+| {{AI_2}} | {{TIME_2}} | {{PROMPT_2}} | {{OUTPUT_2}} | {{STATUS_2}} |
+
+> 설정: `config/ai_logging.yaml`
+
+---
+
+## 메타데이터
+
+```yaml
+stage: "08-qa"
+status: "completed"
+next_stage: "09-testing"
+models_used:
+  - claudecode
+bugs_found: {{BUGS_FOUND}}
+bugs_fixed: {{BUGS_FIXED}}
+security_issues: {{SECURITY_ISSUES}}
+```

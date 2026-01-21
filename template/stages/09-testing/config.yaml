@@ -1,0 +1,65 @@
+# Stage 09: Testing & E2E Configuration
+
+stage:
+  id: "09-testing"
+  name: "Testing & E2E"
+  description: "테스트 코드 작성 및 E2E 테스트"
+
+models:
+  primary: "codex"
+  secondary: null
+  collaboration: null
+
+execution:
+  mode: "sandbox_playwright"
+  container: false
+  sandbox: true
+  timeout: 7200  # 2 hours
+
+mcp_servers:
+  - playwright
+
+inputs:
+  required:
+    - name: "source_code/"
+      description: "테스트할 소스 코드"
+    - name: "../08-qa/outputs/qa_report.md"
+    - name: "../08-qa/HANDOFF.md"
+
+outputs:
+  required:
+    - name: "tests/"
+      description: "테스트 코드"
+    - name: "test_report.md"
+      description: "테스트 결과 보고서"
+    - name: "coverage_report.md"
+      description: "커버리지 보고서"
+    - name: "HANDOFF.md"
+
+prompts:
+  - name: "unit_tests"
+    file: "prompts/unit_tests.md"
+    model: "codex"
+  - name: "integration_tests"
+    file: "prompts/integration_tests.md"
+    model: "codex"
+  - name: "e2e_tests"
+    file: "prompts/e2e_tests.md"
+    model: "codex"
+
+completion:
+  checklist:
+    - "단위 테스트 작성 (커버리지 80%+)"
+    - "통합 테스트 작성"
+    - "E2E 테스트 작성"
+    - "모든 테스트 통과"
+    - "커버리지 보고서 생성"
+  validation:
+    min_coverage: 80
+
+transition:
+  next_stage: "10-deployment"
+  prerequisites:
+    - "08-qa"
+  handoff_required: true
+  checkpoint_required: false

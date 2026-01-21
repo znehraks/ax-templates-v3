@@ -1,0 +1,149 @@
+{
+  "name": "ax-templates",
+  "version": "1.2.0",
+  "description": "Multi-AI Workflow Pipeline Template System",
+
+  "statusline": {
+    "script": ".claude/hooks/statusline.sh",
+    "enabled": true
+  },
+
+  "context_management": {
+    "warning_threshold_percent": 60,
+    "action_threshold_percent": 50,
+    "critical_threshold_percent": 40,
+    "auto_snapshot_on_warning": true,
+    "auto_compact_enabled": true,
+    "auto_recovery_enabled": true,
+    "compact_cooldown_seconds": 300,
+    "snapshot_dir": "state/context"
+  },
+
+  "hooks_info": {
+    "note": "실제 hooks 설정은 settings.local.json에 있음",
+    "stop": ".claude/hooks/stop.sh - 자동 /compact",
+    "session_start": ".claude/hooks/session-start.sh - 자동 복구"
+  },
+
+  "commands": {
+    "init-project": {
+      "description": "새 프로젝트 초기화",
+      "file": "commands/init-project.md"
+    },
+    "run-stage": {
+      "description": "스테이지 실행",
+      "file": "commands/run-stage.md"
+    },
+    "handoff": {
+      "description": "핸드오프 문서 생성",
+      "file": "commands/handoff.md"
+    },
+    "checkpoint": {
+      "description": "체크포인트 생성",
+      "file": "commands/checkpoint.md"
+    },
+    "gemini": {
+      "description": "Gemini CLI 호출 (tmux)",
+      "file": "commands/gemini.md"
+    },
+    "codex": {
+      "description": "Codex CLI 호출 (tmux)",
+      "file": "commands/codex.md"
+    },
+    "status": {
+      "description": "파이프라인 상태 확인",
+      "file": "commands/status.md"
+    },
+    "stages": {
+      "description": "스테이지 목록 및 상세",
+      "file": "commands/stages.md"
+    },
+    "restore": {
+      "description": "체크포인트 복구",
+      "file": "commands/restore.md"
+    },
+    "next": {
+      "description": "다음 스테이지 전환",
+      "file": "commands/next.md"
+    },
+    "context": {
+      "description": "컨텍스트 상태 관리",
+      "file": "commands/context.md"
+    },
+    "brainstorm": {
+      "description": "01-brainstorm 스테이지 시작",
+      "file": "commands/brainstorm.md"
+    },
+    "research": {
+      "description": "02-research 스테이지 시작",
+      "file": "commands/research.md"
+    },
+    "planning": {
+      "description": "03-planning 스테이지 시작",
+      "file": "commands/planning.md"
+    },
+    "ui-ux": {
+      "description": "04-ui-ux 스테이지 시작",
+      "file": "commands/ui-ux.md"
+    },
+    "tasks": {
+      "description": "05-task-management 스테이지 시작",
+      "file": "commands/tasks.md"
+    },
+    "implement": {
+      "description": "06-implementation 스테이지 시작",
+      "file": "commands/implement.md"
+    },
+    "refactor": {
+      "description": "07-refactoring 스테이지 시작",
+      "file": "commands/refactor.md"
+    },
+    "qa": {
+      "description": "08-qa 스테이지 시작",
+      "file": "commands/qa.md"
+    },
+    "test": {
+      "description": "09-testing 스테이지 시작",
+      "file": "commands/test.md"
+    },
+    "deploy": {
+      "description": "10-deployment 스테이지 시작",
+      "file": "commands/deploy.md"
+    },
+    "collaborate": {
+      "description": "Multi-AI 협업 실행",
+      "file": "commands/collaborate.md"
+    },
+    "benchmark": {
+      "description": "AI 모델 벤치마킹",
+      "file": "commands/benchmark.md"
+    },
+    "fork": {
+      "description": "파이프라인 분기 관리",
+      "file": "commands/fork.md"
+    },
+    "validate": {
+      "description": "산출물 검증 실행",
+      "file": "commands/validate.md"
+    }
+  },
+
+  "skills": {
+    "smart-handoff": {
+      "description": "스마트 컨텍스트 추출 및 HANDOFF 생성",
+      "directory": "skills/smart-handoff"
+    },
+    "ai-collaboration": {
+      "description": "Multi-AI 협업 오케스트레이션",
+      "directory": "skills/ai-collaboration"
+    },
+    "auto-checkpoint": {
+      "description": "자동 체크포인트 생성",
+      "directory": "skills/auto-checkpoint"
+    },
+    "output-validator": {
+      "description": "산출물 검증 및 품질 확인",
+      "directory": "skills/output-validator"
+    }
+  }
+}

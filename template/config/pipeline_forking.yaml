@@ -1,0 +1,236 @@
+# ax-templates Pipeline Forking Configuration
+# Branch exploration and parallel pipeline execution
+
+pipeline_forking:
+  enabled: true
+  description: "파이프라인 분기로 다양한 접근법 동시 탐색"
+
+  # 분기점 정의
+  fork_points:
+    planning_stage:
+      stage: "03-planning"
+      condition: "multiple_architectures_proposed"
+      description: "여러 아키텍처 제안 시 분기하여 각각 탐색"
+      auto_fork: false
+      max_forks: 3
+
+    implementation_stage:
+      stage: "06-implementation"
+      condition: "alternative_approaches"
+      description: "구현 접근법이 여러 개일 때 병렬 탐색"
+      auto_fork: false
+      max_forks: 2
+
+    refactoring_stage:
+      stage: "07-refactoring"
+      condition: "optimization_tradeoffs"
+      description: "최적화 방향이 여러 개일 때 비교"
+      auto_fork: false
+      max_forks: 2
+
+  # 자동 분기 트리거
+  auto_fork_triggers:
+    enabled: false  # 기본적으로 수동 분기
+
+    conditions:
+      confidence_threshold:
+        enabled: true
+        threshold: 0.6  # 확신도가 60% 미만일 때
+        action: "suggest_fork"
+
+      multiple_solutions:
+        enabled: true
+        minimum_alternatives: 2
+        action: "suggest_fork"
+
+      high_risk_decision:
+        enabled: true
+        risk_indicators:
+          - "irreversible"
+          - "major_architecture_change"
+          - "breaking_change"
+        action: "require_fork"
+
+  # 분기 관리
+  fork_management:
+    max_active_forks: 3
+    naming_convention: "fork_{{stage}}_{{variant}}_{{timestamp}}"
+
+    storage:
+      base_path: "state/forks/"
+      structure: "isolated"  # isolated or shared
+
+    isolation:
+      separate_state: true
+      separate_outputs: true
+      shared_inputs: true  # 입력은 공유
+
+    # 분기 상태 추적
+    tracking:
+      progress: true
+      metrics: true
+      comparison_points: true
+
+  # 병합 전략
+  merge_strategy:
+    primary: "best_performer"
+    fallback: "manual_selection"
+
+    strategies:
+      best_performer:
+        description: "메트릭 기반 최고 성능 분기 선택"
+        criteria:
+          - metric: "code_quality"
+            weight: 0.3
+          - metric: "performance"
+            weight: 0.3
+          - metric: "maintainability"
+            weight: 0.2
+          - metric: "test_coverage"
+            weight: 0.2
+
+      manual_selection:
+        description: "사용자가 직접 분기 선택"
+        require_justification: true
+
+      cherry_pick:
+        description: "여러 분기에서 최적 부분만 선택"
+        supported: true
+        complexity: "high"
+
+  # 비교 설정
+  comparison:
+    enabled: true
+
+    metrics:
+      code_quality:
+        measure: "lint_score"
+        higher_is_better: true
+
+      performance:
+        measure: "benchmark_time"
+        higher_is_better: false
+
+      maintainability:
+        measure: "cyclomatic_complexity"
+        higher_is_better: false
+
+      test_coverage:
+        measure: "coverage_percentage"
+        higher_is_better: true
+
+    reporting:
+      format: "comparison_table"
+      include_recommendations: true
+
+    visualization:
+      enabled: true
+      chart_types:
+        - "radar_chart"
+        - "bar_comparison"
+
+# 분기 생성 프로세스
+creation_process:
+  steps:
+    - name: "validate_fork_point"
+      description: "분기점 유효성 검증"
+
+    - name: "create_fork_directory"
+      description: "분기 디렉토리 생성"
+
+    - name: "copy_current_state"
+      description: "현재 상태 복사"
+
+    - name: "initialize_fork_config"
+      description: "분기 설정 초기화"
+
+    - name: "create_fork_handoff"
+      description: "분기용 HANDOFF 생성"
+
+    - name: "register_fork"
+      description: "분기 등록"
+
+  fork_handoff_template: |
+    # Fork HANDOFF - {{fork_name}}
+
+    ## 분기 정보
+    - **원본 스테이지**: {{source_stage}}
+    - **분기 이유**: {{fork_reason}}
+    - **분기 시점**: {{timestamp}}
+    - **탐색 방향**: {{exploration_direction}}
+
+    ## 분기 목표
+    {{objectives}}
+
+    ## 평가 기준
+    {{evaluation_criteria}}
+
+    ## 병합 조건
+    {{merge_conditions}}
+
+# 분기 실행
+execution:
+  parallel_execution:
+    enabled: true
+    max_concurrent: 2
+
+  resource_allocation:
+    strategy: "equal"  # equal, priority_based
+
+  synchronization:
+    sync_points:
+      - "stage_complete"
+      - "milestone_reached"
+
+    timeout_minutes: 120  # 분기 최대 실행 시간
+
+# 정리 정책
+cleanup:
+  auto_cleanup: true
+
+  cleanup_triggers:
+    - after_merge
+    - on_abandon
+    - on_timeout
+
+  retention:
+    keep_merged: true
+    keep_abandoned: false
+    retention_days: 7
+
+# 알림 설정
+notifications:
+  on_fork_create:
+    enabled: true
+    message: "파이프라인 분기 생성됨: {{fork_name}}"
+
+  on_fork_complete:
+    enabled: true
+    message: "분기 완료: {{fork_name}} - {{status}}"
+
+  on_comparison_ready:
+    enabled: true
+    message: "분기 비교 준비 완료. {{fork_count}}개 분기 비교 가능"
+
+  on_merge:
+    enabled: true
+    message: "분기 병합 완료: {{selected_fork}} 선택됨"
+
+# 통합 설정
+integration:
+  git:
+    create_branches: true
+    branch_prefix: "fork/"
+    auto_merge: false
+
+  handoff:
+    include_fork_info: true
+    track_decisions: true
+
+  checkpoint:
+    create_before_fork: true
+    create_after_merge: true
+
+  memory:
+    save_fork_decisions: true
+    save_comparison_results: true

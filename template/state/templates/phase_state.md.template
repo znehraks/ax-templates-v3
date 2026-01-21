@@ -1,0 +1,97 @@
+# 작업 상태 저장 - {{TIMESTAMP}}
+
+## 컨텍스트 상태
+- **남은 컨텍스트**: {{REMAINING_PERCENT}}%
+- **저장 트리거**: {{TRIGGER_REASON}}
+
+---
+
+## 현재 스테이지
+**{{STAGE_ID}}**: {{STAGE_NAME}}
+
+## 스테이지 진행률
+- 전체 태스크: {{TOTAL_TASKS}}
+- 완료: {{COMPLETED_TASKS}}
+- 진행률: {{PROGRESS_PERCENT}}%
+
+---
+
+## 완료된 태스크
+{{#each COMPLETED_ITEMS}}
+- [x] {{this.name}} ({{this.completed_at}})
+{{/each}}
+
+## 진행 중인 태스크
+{{#each IN_PROGRESS_ITEMS}}
+- [ ] **{{this.name}}**
+  - 시작: {{this.started_at}}
+  - 상태: {{this.status_detail}}
+{{/each}}
+
+## 대기 중인 태스크
+{{#each PENDING_ITEMS}}
+- [ ] {{this.name}}
+{{/each}}
+
+---
+
+## 핵심 컨텍스트
+
+### 주요 결정사항
+{{#each KEY_DECISIONS}}
+- **{{this.topic}}**: {{this.decision}}
+  - 이유: {{this.rationale}}
+{{/each}}
+
+### 수정된 파일
+{{#each MODIFIED_FILES}}
+- `{{this.path}}` - {{this.change_type}} ({{this.lines_changed}} lines)
+{{/each}}
+
+### 활성 이슈/버그
+{{#each ACTIVE_ISSUES}}
+- {{this.description}}
+  - 상태: {{this.status}}
+{{/each}}
+
+---
+
+## AI 호출 기록
+| AI | 시간 | 프롬프트 파일 | 결과 파일 |
+|----|------|--------------|----------|
+{{#each AI_CALLS}}
+| {{this.model}} | {{this.timestamp}} | {{this.prompt_file}} | {{this.output_file}} |
+{{/each}}
+
+---
+
+## 복구 지침
+
+### 즉시 실행 (세션 복구 시)
+1. 이 파일 읽기: `state/context/{{FILENAME}}`
+2. 현재 HANDOFF 참조: `{{HANDOFF_FILE}}`
+3. 다음 태스크부터 재개: **{{NEXT_TASK}}**
+
+### 컨텍스트 복원 우선순위
+1. 현재 스테이지 `CLAUDE.md` 로드
+2. 이전 스테이지 `HANDOFF.md` 참조
+3. 활성 태스크 상태 확인
+4. 수정 중인 파일 열기
+
+### 추가 참조 파일
+{{#each REFERENCE_FILES}}
+- `{{this}}`
+{{/each}}
+
+---
+
+## 메타데이터
+```json
+{
+  "created_at": "{{TIMESTAMP}}",
+  "stage_id": "{{STAGE_ID}}",
+  "remaining_context_percent": {{REMAINING_PERCENT}},
+  "trigger": "{{TRIGGER_REASON}}",
+  "recovery_priority": "{{RECOVERY_PRIORITY}}"
+}
+```

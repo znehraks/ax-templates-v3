@@ -1,0 +1,357 @@
+# ax-templates Pipeline Configuration
+# Multi-AI Development Workflow Pipeline Definition
+
+pipeline:
+  name: "Multi-AI Development Workflow"
+  version: "1.0.0"
+  description: "10-stage software development workflow with multi-AI orchestration"
+
+stages:
+  - id: "01-brainstorm"
+    name: "Brainstorming"
+    description: "발산적 아이디어 생성 및 요구사항 탐색"
+    models: ["gemini", "claudecode"]
+    mode: "yolo"
+    container: true
+    inputs:
+      - "project_brief.md"
+      - "user_requirements.md"
+    outputs:
+      - "ideas.md"
+      - "requirements_analysis.md"
+      - "HANDOFF.md"
+    timeout: 3600  # 1 hour
+
+  - id: "02-research"
+    name: "Research"
+    description: "기술 리서치 및 시장 분석"
+    models: ["claude"]
+    mode: "plan"
+    mcp_servers: ["firecrawl", "exa", "context7"]
+    inputs:
+      - "requirements_analysis.md"
+    outputs:
+      - "tech_research.md"
+      - "market_analysis.md"
+      - "feasibility_report.md"
+      - "HANDOFF.md"
+    timeout: 7200  # 2 hours
+
+  - id: "03-planning"
+    name: "Planning"
+    description: "시스템 아키텍처 및 기술 스택 결정"
+    models: ["gemini"]
+    mode: "plan"
+    inputs:
+      - "tech_research.md"
+      - "feasibility_report.md"
+    outputs:
+      - "architecture.md"
+      - "tech_stack.md"
+      - "project_plan.md"
+      - "HANDOFF.md"
+    timeout: 3600
+
+  - id: "04-ui-ux"
+    name: "UI/UX Planning"
+    description: "사용자 인터페이스 및 경험 설계"
+    models: ["gemini"]
+    mode: "plan"
+    inputs:
+      - "requirements_analysis.md"
+      - "architecture.md"
+    outputs:
+      - "wireframes.md"
+      - "user_flows.md"
+      - "design_system.md"
+      - "HANDOFF.md"
+    timeout: 3600
+
+  - id: "05-task-management"
+    name: "Task Management"
+    description: "태스크 분해 및 스프린트 계획"
+    models: ["claudecode"]
+    mode: "plan"
+    inputs:
+      - "project_plan.md"
+      - "architecture.md"
+    outputs:
+      - "tasks.md"
+      - "sprint_plan.md"
+      - "milestones.md"
+      - "HANDOFF.md"
+    timeout: 1800  # 30 minutes
+
+  - id: "06-implementation"
+    name: "Implementation"
+    description: "핵심 기능 구현"
+    models: ["claudecode"]
+    mode: "plan_sandbox"
+    sandbox: true
+    inputs:
+      - "tasks.md"
+      - "architecture.md"
+      - "design_system.md"
+    outputs:
+      - "source_code/"
+      - "implementation_log.md"
+      - "HANDOFF.md"
+    timeout: 14400  # 4 hours
+    checkpoint_required: true
+
+  - id: "07-refactoring"
+    name: "Refactoring"
+    description: "코드 품질 개선 및 최적화"
+    models: ["codex"]
+    mode: "deep_dive"
+    inputs:
+      - "source_code/"
+      - "implementation_log.md"
+    outputs:
+      - "refactored_code/"
+      - "refactoring_report.md"
+      - "HANDOFF.md"
+    timeout: 7200
+    checkpoint_required: true
+
+  - id: "08-qa"
+    name: "QA"
+    description: "품질 보증 및 코드 리뷰"
+    models: ["claudecode"]
+    mode: "plan_sandbox"
+    sandbox: true
+    inputs:
+      - "refactored_code/"
+      - "refactoring_report.md"
+    outputs:
+      - "qa_report.md"
+      - "bug_fixes.md"
+      - "HANDOFF.md"
+    timeout: 3600
+
+  - id: "09-testing"
+    name: "Testing & E2E"
+    description: "테스트 코드 작성 및 E2E 테스트"
+    models: ["codex"]
+    mode: "sandbox_playwright"
+    sandbox: true
+    mcp_servers: ["playwright"]
+    inputs:
+      - "source_code/"
+      - "qa_report.md"
+    outputs:
+      - "tests/"
+      - "test_report.md"
+      - "coverage_report.md"
+      - "HANDOFF.md"
+    timeout: 7200
+
+  - id: "10-deployment"
+    name: "CI/CD & Deployment"
+    description: "배포 파이프라인 설정 및 배포"
+    models: ["claudecode"]
+    mode: "headless"
+    inputs:
+      - "source_code/"
+      - "tests/"
+      - "test_report.md"
+    outputs:
+      - ".github/workflows/"
+      - "deployment_config/"
+      - "deployment_log.md"
+    timeout: 3600
+
+# State Management Configuration
+state_management:
+  progress_file: "state/progress.json"
+  checkpoints_dir: "state/checkpoints"
+  context_dir: "state/context"
+  handoffs_dir: "state/handoffs"
+
+  # Context management thresholds (percentage-based, remaining context)
+  # See config/context.yaml for detailed settings
+  context_thresholds:
+    warning: 60      # 60% remaining - display warning
+    action: 50       # 50% remaining - auto-save state
+    critical: 40     # 40% remaining - recommend /clear
+
+  # Task-based auto-save
+  task_save_frequency: 5  # Save every 5 completed tasks
+
+  # Auto-actions when thresholds are reached
+  auto_actions:
+    on_warning:      # 60% remaining
+      - display_banner
+    on_action:       # 50% remaining
+      - save_snapshot
+      - suggest_compact
+    on_critical:     # 40% remaining
+      - save_snapshot
+      - require_compact
+
+  # Statusline API integration for real-time monitoring
+  statusline:
+    enabled: true
+    script: ".claude/hooks/statusline.sh"
+    update_interval_ms: 300
+
+  # Legacy absolute thresholds (deprecated, kept for compatibility)
+  context_warning: 50000    # tokens - trigger state save
+  context_limit: 80000      # tokens - trigger /clear
+
+  # Automatic behaviors
+  auto_checkpoint: true
+  auto_handoff: true
+  preserve_failed_states: true
+
+# Hook Configuration
+hooks:
+  pre_stage:
+    - "validate_inputs"
+    - "check_previous_handoff"
+    - "verify_prerequisites"
+
+  post_stage:
+    - "generate_handoff"
+    - "update_progress"
+    - "create_checkpoint"
+    - "notify_completion"
+
+# Transition Rules
+transitions:
+  allow_skip: false
+  require_handoff: true
+  require_checkpoint:
+    - "06-implementation"
+    - "07-refactoring"
+
+  # Rollback configuration
+  rollback:
+    enabled: true
+    max_rollback_stages: 2
+
+# Test-First Flow Configuration
+# Ensures tests are run at key stages to catch bugs early
+test_first_flow:
+  enabled: true
+  description: "구현/리팩토링 단계 후 즉시 테스트 실행으로 버그 조기 발견"
+
+  # Stages requiring tests after completion
+  test_gates:
+    - stage: "06-implementation"
+      required_tests:
+        - type: "smoke"
+          command: "npm run dev"
+          description: "개발 서버 실행 확인"
+          timeout: 60
+        - type: "lint"
+          command: "npm run lint"
+          description: "정적 분석"
+          timeout: 120
+        - type: "typecheck"
+          command: "npm run typecheck"
+          description: "타입 체크"
+          timeout: 120
+        - type: "playwright_smoke"
+          command: "npx playwright test --grep @smoke"
+          description: "UI 기본 동작 확인"
+          timeout: 180
+          optional: true  # Playwright 설정 없으면 건너뜀
+      on_failure:
+        action: "block_handoff"
+        message: "테스트 실패 - 문제 해결 후 HANDOFF 진행"
+
+    - stage: "07-refactoring"
+      required_tests:
+        - type: "regression"
+          command: "npm run test"
+          description: "기존 테스트 실행 (회귀 방지)"
+          timeout: 300
+        - type: "lint"
+          command: "npm run lint"
+          description: "리팩토링 후 코드 품질 확인"
+          timeout: 120
+      on_failure:
+        action: "warn_and_continue"
+        message: "회귀 테스트 실패 - 주의 필요"
+
+    - stage: "08-qa"
+      required_tests:
+        - type: "full_test"
+          command: "npm run test"
+          description: "전체 테스트 스위트"
+          timeout: 600
+        - type: "e2e"
+          command: "npx playwright test"
+          description: "E2E 테스트"
+          timeout: 600
+          optional: true
+      on_failure:
+        action: "block_handoff"
+        message: "QA 테스트 실패 - 버그 수정 필요"
+
+  # Test result tracking
+  tracking:
+    enabled: true
+    log_file: "state/test_results.json"
+    include_in_handoff: true
+
+  # Notifications
+  notifications:
+    on_test_failure: true
+    on_bug_found: true
+    include_stack_trace: true
+
+# Pipeline Forking Configuration
+# See config/pipeline_forking.yaml for detailed settings
+forking:
+  enabled: true
+
+  # Stages where forking is allowed
+  fork_points:
+    - stage: "03-planning"
+      condition: "multiple_architectures_proposed"
+      description: "아키텍처 대안 탐색용 분기"
+
+    - stage: "06-implementation"
+      condition: "technology_alternatives"
+      description: "기술 스택 대안 탐색용 분기"
+
+  # Fork management
+  management:
+    max_active_forks: 3
+    state_directory: "state/forks"
+
+    # Auto-merge settings
+    auto_merge:
+      enabled: false
+      strategy: "best_performer"
+
+    # Cleanup settings
+    cleanup:
+      delete_merged_forks: false
+      archive_directory: "state/forks/archived"
+
+  # Fork comparison metrics
+  comparison:
+    enabled: true
+    metrics:
+      - name: "code_quality"
+        weight: 0.4
+        command: "npm run lint -- --format json"
+
+      - name: "performance"
+        weight: 0.3
+        command: "npm run benchmark"
+
+      - name: "maintainability"
+        weight: 0.3
+        tool: "sonarqube"
+
+  # Integration with commands
+  commands:
+    create: "/fork create"
+    list: "/fork list"
+    compare: "/fork compare"
+    merge: "/fork merge"
+    delete: "/fork delete"

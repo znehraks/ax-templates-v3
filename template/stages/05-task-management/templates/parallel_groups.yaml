@@ -1,0 +1,153 @@
+# Parallel Task Groups Configuration
+# ax-templates-3 병렬 태스크 관리 (Issue #9 해결)
+
+parallel_execution:
+  # 병렬 실행 활성화 여부
+  enabled: true
+
+  # 기본 규칙
+  default_mode: "sequential"  # sequential | parallel_when_safe
+
+# 의존성 분석 규칙
+dependency_analysis:
+  # 의존성 없는 태스크 자동 그룹화
+  auto_group_independent: true
+
+  # 의존성 유형
+  dependency_types:
+    - type: "blocks"
+      description: "완료되어야 다음 태스크 시작 가능"
+
+    - type: "informs"
+      description: "참조하지만 블로킹 아님"
+
+    - type: "none"
+      description: "완전 독립"
+
+# 병렬 그룹 템플릿
+parallel_groups:
+  # 예시: 스프린트 1 태스크 그룹
+  sprint_1:
+    # 그룹 A: 병렬 실행 가능
+    group_a:
+      tasks:
+        - "TASK-001: 프로젝트 초기 설정"
+        - "TASK-002: 환경 변수 설정"
+        - "TASK-003: ESLint/Prettier 설정"
+      parallel: true
+      reason: "독립적인 설정 작업들"
+
+    # 그룹 B: 그룹 A 완료 후 병렬 실행
+    group_b:
+      depends_on: ["group_a"]
+      tasks:
+        - "TASK-004: 레이아웃 컴포넌트"
+        - "TASK-005: 네비게이션 컴포넌트"
+        - "TASK-006: 푸터 컴포넌트"
+      parallel: true
+      reason: "공통 컴포넌트, 상호 의존성 없음"
+
+    # 그룹 C: 순차 실행 필요
+    group_c:
+      depends_on: ["group_b"]
+      tasks:
+        - "TASK-007: API 클라이언트 설정"
+        - "TASK-008: 인증 서비스 구현"
+        - "TASK-009: 보호된 라우트 설정"
+      parallel: false
+      reason: "순차적 의존성 있음"
+
+# 병렬 실행 규칙
+execution_rules:
+  # 병렬 실행 가능 조건
+  parallel_allowed_when:
+    - "no_shared_files"           # 동일 파일 수정 없음
+    - "no_data_dependency"        # 데이터 의존성 없음
+    - "different_modules"         # 다른 모듈
+    - "explicit_parallel_flag"    # 명시적 병렬 플래그
+
+  # 병렬 실행 금지 조건
+  parallel_prohibited_when:
+    - "same_file_modification"    # 동일 파일 수정
+    - "database_migration"        # DB 마이그레이션
+    - "sequential_dependency"     # 순차 의존성
+    - "shared_state"              # 공유 상태
+
+# 태스크 분류 가이드
+classification_guide:
+  # 병렬 가능 태스크 유형
+  parallelizable:
+    - "독립적인 UI 컴포넌트 구현"
+    - "서로 다른 모듈의 유틸리티 함수"
+    - "독립적인 테스트 작성"
+    - "문서 작성"
+    - "환경 설정 (충돌 없는 경우)"
+
+  # 순차 필수 태스크 유형
+  sequential_required:
+    - "데이터베이스 스키마 변경"
+    - "인증/인가 흐름"
+    - "API 엔드포인트 → 클라이언트 통합"
+    - "의존성 있는 컴포넌트 체인"
+    - "버전 업그레이드"
+
+# 시각화 형식
+visualization:
+  # 의존성 그래프 형식
+  graph_format: "mermaid"
+
+  # 예시 출력
+  example: |
+    ```mermaid
+    graph LR
+      A[TASK-001] --> D[TASK-004]
+      B[TASK-002] --> D
+      C[TASK-003] --> D
+      D --> G[TASK-007]
+      E[TASK-005] --> G
+      F[TASK-006] --> G
+      G --> H[TASK-008]
+      H --> I[TASK-009]
+
+      subgraph "그룹 A (병렬)"
+        A
+        B
+        C
+      end
+
+      subgraph "그룹 B (병렬)"
+        D
+        E
+        F
+      end
+
+      subgraph "그룹 C (순차)"
+        G
+        H
+        I
+      end
+    ```
+
+# 실행 최적화
+optimization:
+  # 동시 실행 최대 수
+  max_concurrent_tasks: 3
+
+  # 리소스 제한
+  resource_limits:
+    cpu_intensive_concurrent: 2
+    io_intensive_concurrent: 5
+
+  # 우선순위 기반 스케줄링
+  priority_scheduling: true
+
+# 모니터링
+monitoring:
+  # 진행 상황 추적
+  track_parallel_progress: true
+
+  # 병목 감지
+  detect_bottlenecks: true
+
+  # 완료 알림
+  notify_on_group_complete: true

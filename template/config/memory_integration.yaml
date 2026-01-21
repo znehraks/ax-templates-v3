@@ -1,0 +1,200 @@
+# ax-templates Memory Integration Configuration
+# AI memory provider integration and sync settings
+
+memory_integration:
+  enabled: true
+  description: "AI 메모리 시스템 통합 및 컨텍스트 동기화"
+
+  # 지원 메모리 프로바이더
+  providers:
+    claude_mem:
+      enabled: true
+      description: "Claude Memory MCP 서버 통합"
+
+      # 동기화 트리거
+      sync_on:
+        - "stage_complete"
+        - "session_end"
+        - "checkpoint_create"
+        - "critical_decision"
+
+      # 저장 설정
+      storage:
+        project_prefix: "ax-templates"
+        observation_types:
+          - "decision"
+          - "discovery"
+          - "feature"
+          - "bugfix"
+
+      # 검색 설정
+      search:
+        default_limit: 10
+        include_timeline: true
+
+    # 향후 확장용 다른 프로바이더
+    external_memory:
+      enabled: false
+      provider: null
+
+  # HANDOFF-메모리 동기화
+  handoff_memory_sync:
+    on_stage_complete:
+      - action: "save_to_memory"
+        content: "key_decisions"
+        observation_type: "decision"
+        tags:
+          - "{{stage_id}}"
+          - "{{project_name}}"
+        include_metadata:
+          - stage
+          - timestamp
+          - related_files
+
+      - action: "save_to_memory"
+        content: "blocking_issues"
+        observation_type: "bugfix"
+        tags:
+          - "issue"
+          - "{{stage_id}}"
+
+      - action: "save_to_memory"
+        content: "technical_discoveries"
+        observation_type: "discovery"
+        tags:
+          - "learning"
+          - "{{stage_id}}"
+
+    on_stage_start:
+      - action: "load_from_memory"
+        filter:
+          project: "{{project_name}}"
+          stages:
+            - "{{previous_stage}}"
+            - "{{current_stage}}"
+          limit: 20
+        inject_to: "context"
+        format: "summary"
+
+      - action: "search_related"
+        query: "{{stage_objectives}}"
+        limit: 5
+        inject_to: "relevant_context"
+
+    on_session_start:
+      - action: "load_recent"
+        project: "{{project_name}}"
+        limit: 30
+        days: 7
+        inject_to: "session_context"
+
+  # 컨텍스트 주입 설정
+  context_injection:
+    enabled: true
+    description: "메모리에서 관련 컨텍스트 자동 주입"
+
+    triggers:
+      on_task_start:
+        enabled: true
+        search_query: "{{task_description}}"
+        max_results: 5
+        inject_location: "task_context"
+
+      on_error:
+        enabled: true
+        search_query: "error {{error_type}} {{error_message}}"
+        max_results: 3
+        inject_location: "debugging_hints"
+
+    formatting:
+      header: "## Related Context from Memory"
+      item_template: |
+        ### {{title}}
+        - **Type**: {{type}}
+        - **Stage**: {{stage}}
+        - **Date**: {{date}}
+        > {{content}}
+
+  # 메모리 정리 정책
+  cleanup_policy:
+    auto_cleanup: true
+
+    retention:
+      decisions: 90  # days
+      discoveries: 180
+      bugfixes: 60
+      general: 30
+
+    deduplication:
+      enabled: true
+      similarity_threshold: 0.85
+
+# 세션 컨텍스트 복구
+session_recovery:
+  enabled: true
+  description: "이전 세션 컨텍스트 자동 복구"
+
+  on_session_start:
+    auto_load: true
+    prompt_user: false  # true면 사용자에게 확인
+
+    load_order:
+      - last_handoff
+      - recent_memories
+      - checkpoint_state
+
+  recovery_prompt:
+    enabled: true
+    template: |
+      ## 이전 세션 컨텍스트 복구됨
+
+      **마지막 스테이지**: {{last_stage}}
+      **마지막 작업**: {{last_task}}
+      **상태**: {{status}}
+
+      ### 핵심 컨텍스트
+      {{key_context}}
+
+      ### 다음 단계
+      {{next_steps}}
+
+# 크로스 스테이지 학습
+cross_stage_learning:
+  enabled: true
+  description: "스테이지 간 학습 및 패턴 인식"
+
+  patterns:
+    track:
+      - successful_approaches
+      - failed_approaches
+      - common_errors
+      - time_estimates
+
+    apply:
+      suggest_similar: true
+      warn_on_known_pitfalls: true
+
+  feedback_loop:
+    enabled: true
+    collect_on: ["stage_complete", "task_complete"]
+    metrics:
+      - success_rate
+      - time_taken
+      - iterations_needed
+
+# 통합 검증
+integration_checks:
+  on_startup:
+    - check_memory_connection
+    - verify_project_access
+    - load_configuration
+
+  health_monitoring:
+    enabled: true
+    interval: 300  # 5 minutes
+    alert_on_failure: true
+
+  fallback:
+    on_memory_unavailable: "local_cache"
+    local_cache_path: "state/memory_cache/"
+    cache_ttl: 3600  # 1 hour

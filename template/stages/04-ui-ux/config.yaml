@@ -1,0 +1,57 @@
+# Stage 04: UI/UX Planning Configuration
+
+stage:
+  id: "04-ui-ux"
+  name: "UI/UX Planning"
+  description: "사용자 인터페이스 및 경험 설계"
+
+models:
+  primary: "gemini"
+  secondary: null
+  collaboration: null
+
+execution:
+  mode: "plan"
+  container: false
+  sandbox: false
+  timeout: 3600
+
+inputs:
+  required:
+    - name: "../01-brainstorm/outputs/requirements_analysis.md"
+    - name: "../03-planning/outputs/architecture.md"
+    - name: "../03-planning/HANDOFF.md"
+  optional:
+    - name: "../01-brainstorm/outputs/personas.md"
+
+outputs:
+  required:
+    - name: "wireframes.md"
+    - name: "user_flows.md"
+    - name: "design_system.md"
+    - name: "HANDOFF.md"
+
+prompts:
+  - name: "wireframes"
+    file: "prompts/wireframes.md"
+    model: "gemini"
+  - name: "user_flows"
+    file: "prompts/user_flows.md"
+    model: "gemini"
+  - name: "design_system"
+    file: "prompts/design_system.md"
+    model: "gemini"
+
+completion:
+  checklist:
+    - "주요 화면 와이어프레임 5개 이상"
+    - "핵심 사용자 플로우 3개 이상"
+    - "디자인 시스템 기초 정의"
+    - "컴포넌트 목록 작성"
+
+transition:
+  next_stage: "05-task-management"
+  prerequisites:
+    - "03-planning"
+  handoff_required: true
+  checkpoint_required: false

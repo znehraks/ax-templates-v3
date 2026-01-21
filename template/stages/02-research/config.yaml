@@ -1,0 +1,68 @@
+# Stage 02: Research Configuration
+
+stage:
+  id: "02-research"
+  name: "Research"
+  description: "기술 리서치 및 시장 분석"
+
+models:
+  primary: "claude"
+  secondary: null
+  collaboration: null
+
+execution:
+  mode: "plan"
+  container: false
+  sandbox: false
+  timeout: 7200  # 2 hours
+
+mcp_servers:
+  - firecrawl
+  - exa
+  - context7
+
+inputs:
+  required:
+    - name: "../01-brainstorm/outputs/requirements_analysis.md"
+      description: "요구사항 분석 결과"
+    - name: "../01-brainstorm/HANDOFF.md"
+      description: "이전 스테이지 핸드오프"
+  optional:
+    - name: "../01-brainstorm/outputs/ideas.md"
+      description: "브레인스토밍 아이디어"
+
+outputs:
+  required:
+    - name: "tech_research.md"
+      description: "기술 리서치 결과"
+    - name: "market_analysis.md"
+      description: "시장 분석"
+    - name: "feasibility_report.md"
+      description: "실현 가능성 보고서"
+    - name: "HANDOFF.md"
+      description: "다음 스테이지 인계 문서"
+
+prompts:
+  - name: "tech_stack"
+    file: "prompts/tech_stack.md"
+    model: "claude"
+  - name: "market_analysis"
+    file: "prompts/market_analysis.md"
+    model: "claude"
+  - name: "feasibility"
+    file: "prompts/feasibility.md"
+    model: "claude"
+
+completion:
+  checklist:
+    - "기술 스택 비교 분석 완료"
+    - "경쟁사 3개 이상 심층 분석"
+    - "실현 가능성 보고서 작성"
+    - "HANDOFF.md 생성"
+
+transition:
+  next_stage: "03-planning"
+  prerequisites:
+    - "01-brainstorm"
+  handoff_required: true
+  checkpoint_required: false

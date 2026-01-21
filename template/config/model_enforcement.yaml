@@ -1,0 +1,141 @@
+# AI Model Enforcement Configuration
+# ax-templates-3 AI 모델 역할 분담 및 강제 실행 설정
+
+model_enforcement:
+  enabled: true
+
+  # ClaudeCode 직접 처리 가능 (외부 AI 호출 불필요)
+  claudecode_direct:
+    operations:
+      - "npm run lint"
+      - "npm run build"
+      - "npm run test"
+      - "npm run format"
+      - "git status"
+      - "git add"
+      - "git commit"
+      - "ls/cat/find"
+      - "파일 읽기"
+      - "간단한 수정 (< 10줄)"
+      - "설정 파일 편집"
+      - "문서 작성/수정"
+
+    characteristics:
+      - max_lines_change: 10
+      - complexity: "low"
+      - no_architectural_impact: true
+
+  # 외부 AI 강제 호출 필요
+  external_ai_required:
+    # Gemini 필수 태스크
+    gemini_tasks:
+      - "발산적 아이디어 생성"
+      - "창의적 브레인스토밍"
+      - "웹 리서치 (Reddit, HackerNews)"
+      - "시장 조사"
+      - "사용자 페르소나 생성"
+      - "UI/UX 디자인 아이디어"
+
+    # Codex 필수 태스크
+    codex_tasks:
+      - "코드 리팩토링 (> 10줄)"
+      - "성능 최적화"
+      - "복잡한 버그 수정"
+      - "아키텍처 개선"
+      - "디자인 패턴 적용"
+      - "테스트 코드 생성"
+      - "E2E 테스트 작성"
+
+# 스테이지별 자동 호출 설정
+stage_auto_invoke:
+  "01-brainstorm":
+    model: "gemini"
+    trigger: "stage_start"
+    prompt_file: "prompts/ideation.md"
+    required: true
+    wrapper: "scripts/gemini-wrapper.sh"
+
+  "03-planning":
+    model: "gemini"
+    trigger: "architecture_design"
+    prompt_file: "prompts/architecture.md"
+    required: false
+    wrapper: "scripts/gemini-wrapper.sh"
+
+  "04-ui-ux":
+    model: "gemini"
+    trigger: "design_ideation"
+    prompt_file: "prompts/ui_concepts.md"
+    required: false
+    wrapper: "scripts/gemini-wrapper.sh"
+
+  "07-refactoring":
+    model: "codex"
+    trigger: "refactoring_start"
+    prompt_file: "prompts/code_analysis.md"
+    required: true
+    wrapper: "scripts/codex-wrapper.sh"
+    flags: "--full-auto"
+
+  "09-testing":
+    model: "codex"
+    trigger: "test_generation"
+    prompt_file: "prompts/test_generation.md"
+    required: true
+    wrapper: "scripts/codex-wrapper.sh"
+    flags: "--full-auto"
+
+# 역할 분담 가이드라인
+role_guidelines:
+  claudecode:
+    strengths:
+      - "파일 시스템 조작"
+      - "빌드/테스트 실행"
+      - "Git 작업"
+      - "문서 구조화"
+      - "코드 리뷰 (읽기)"
+    avoid:
+      - "대규모 코드 생성"
+      - "창의적 아이디어 요청"
+      - "웹 리서치 기반 작업"
+
+  gemini:
+    strengths:
+      - "창의적 아이디어"
+      - "웹 리서치"
+      - "시장 분석"
+      - "UI/UX 컨셉"
+    avoid:
+      - "코드 작성/수정"
+      - "파일 시스템 조작"
+      - "Git 작업"
+
+  codex:
+    strengths:
+      - "코드 작성/수정"
+      - "리팩토링"
+      - "테스트 작성"
+      - "버그 수정"
+    avoid:
+      - "창의적 아이디어"
+      - "웹 리서치"
+      - "문서 작성"
+
+# 강제 실행 검증
+enforcement_validation:
+  warn_on_violation: true
+  block_on_violation: false
+
+  # 위반 감지 규칙
+  violation_rules:
+    - condition: "refactoring_without_codex"
+      stage: "07-refactoring"
+      message: "⚠️ 리팩토링 작업은 Codex를 통해 수행해주세요. /codex 명령 사용"
+
+    - condition: "brainstorm_without_gemini"
+      stage: "01-brainstorm"
+      message: "⚠️ 아이디어 생성은 Gemini를 통해 수행해주세요. /gemini 명령 사용"
+
+    - condition: "large_code_change_direct"
+      threshold_lines: 10
+      message: "⚠️ 10줄 이상 코드 변경은 Codex 사용을 권장합니다."

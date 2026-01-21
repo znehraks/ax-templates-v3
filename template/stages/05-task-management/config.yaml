@@ -1,0 +1,81 @@
+# Stage 05: Task Management Configuration
+
+stage:
+  id: "05-task-management"
+  name: "Task Management"
+  description: "태스크 분해 및 스프린트 계획"
+
+models:
+  primary: "claudecode"
+  secondary: null
+  collaboration: null
+
+execution:
+  mode: "plan"
+  container: false
+  sandbox: false
+  timeout: 1800  # 30 minutes
+
+inputs:
+  required:
+    - name: "../03-planning/outputs/project_plan.md"
+    - name: "../03-planning/outputs/architecture.md"
+    - name: "../04-ui-ux/HANDOFF.md"
+  optional:
+    - name: "../04-ui-ux/outputs/design_system.md"
+    - name: "../01-brainstorm/outputs/requirements_analysis.md"
+
+outputs:
+  required:
+    - name: "tasks.md"
+      description: "태스크 목록"
+    - name: "sprint_plan.md"
+      description: "스프린트 계획"
+    - name: "milestones.md"
+      description: "마일스톤 정의"
+    - name: "HANDOFF.md"
+
+# Notion 연동 설정 (Issue #4, #5, #6, #8, #16 해결)
+notion_integration:
+  enabled: true
+  schema: "templates/task_schema.yaml"
+  guide: "templates/notion_integration.md"
+
+  # 태스크 생성 규칙
+  task_creation:
+    mode: "sequential"     # 순차 생성 필수!
+    batch_size: 1          # 한 번에 하나씩
+    delay_ms: 100          # 생성 간 딜레이
+
+  # 필수 필드
+  required_fields:
+    - "Task Name"
+    - "Status"             # Issue #16: 필수!
+    - "Order"              # Issue #5: 정렬용!
+
+  # 기본값
+  defaults:
+    status: "To Do"
+    priority: "Medium"
+
+prompts:
+  - name: "task_breakdown"
+    file: "prompts/task_breakdown.md"
+    model: "claudecode"
+  - name: "sprint_planning"
+    file: "prompts/sprint_planning.md"
+    model: "claudecode"
+
+completion:
+  checklist:
+    - "전체 태스크 목록 작성"
+    - "의존성 그래프 생성"
+    - "스프린트 3개 이상 계획"
+    - "마일스톤 산출물 정의"
+
+transition:
+  next_stage: "06-implementation"
+  prerequisites:
+    - "04-ui-ux"
+  handoff_required: true
+  checkpoint_required: false

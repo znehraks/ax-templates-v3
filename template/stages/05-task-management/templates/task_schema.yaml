@@ -1,0 +1,154 @@
+# Task Schema Definition
+# ax-templates-3 태스크 관리 스키마 (Issue #4, #6, #8, #16 해결)
+
+schema:
+  name: "Project Tasks"
+  version: "1.0.0"
+
+# 필수 필드 정의
+fields:
+  # 태스크 이름 (Title)
+  - name: "Task Name"
+    type: "title"
+    required: true
+    description: "태스크 제목"
+
+  # 상태 필드 (Issue #16: Status 필드 필수!)
+  - name: "Status"
+    type: "select"
+    required: true
+    default: "To Do"
+    options:
+      - name: "To Do"
+        color: "gray"
+      - name: "In Progress"
+        color: "blue"
+      - name: "Review"
+        color: "yellow"
+      - name: "Done"
+        color: "green"
+      - name: "Blocked"
+        color: "red"
+
+  # 우선순위
+  - name: "Priority"
+    type: "select"
+    required: false
+    default: "Medium"
+    options:
+      - name: "High"
+        color: "red"
+      - name: "Medium"
+        color: "yellow"
+      - name: "Low"
+        color: "green"
+
+  # 정렬용 순서 (Issue #5, #6, #8 해결)
+  - name: "Order"
+    type: "number"
+    required: true
+    description: "태스크 순서 (정렬용)"
+    auto_increment: true
+
+  # 스프린트
+  - name: "Sprint"
+    type: "select"
+    required: false
+    options:
+      - name: "Sprint 1"
+      - name: "Sprint 2"
+      - name: "Sprint 3"
+
+  # 담당자
+  - name: "Assignee"
+    type: "text"
+    required: false
+
+  # 예상 시간
+  - name: "Estimate"
+    type: "text"
+    required: false
+    description: "예상 소요 시간 (예: 2h, 1d)"
+
+  # 마감일
+  - name: "Due Date"
+    type: "date"
+    required: false
+
+  # 의존성
+  - name: "Depends On"
+    type: "text"
+    required: false
+    description: "선행 태스크 ID (콤마로 구분)"
+
+  # 스테이지
+  - name: "Stage"
+    type: "select"
+    required: false
+    options:
+      - name: "06-implementation"
+      - name: "07-refactoring"
+      - name: "08-qa"
+      - name: "09-testing"
+
+# 태스크 생성 규칙 (Issue #6, #8 해결: 순차 생성!)
+creation_rules:
+  # 병렬 생성 금지 - 순서 보장
+  mode: "sequential"
+  batch_size: 1
+
+  # 순차 생성 절차
+  procedure:
+    - step: 1
+      action: "create_single_task"
+      description: "단일 태스크 생성"
+    - step: 2
+      action: "verify_order_field"
+      description: "Order 필드 확인"
+    - step: 3
+      action: "create_next_task"
+      description: "다음 태스크 생성 (Order + 1)"
+
+  # 금지 사항
+  prohibited:
+    - "batch_create"      # 일괄 생성 금지
+    - "parallel_create"   # 병렬 생성 금지
+
+  # 권장 사항
+  recommended:
+    - "explicit_order"    # 명시적 Order 값 지정
+    - "status_to_do"      # Status = "To Do"로 생성
+    - "sequential_naming" # 순차적 이름 부여
+
+# Notion 데이터베이스 생성 템플릿
+notion_template:
+  database_name: "{{PROJECT_NAME}} Tasks"
+
+  properties:
+    - "Task Name"    # title
+    - "Status"       # select (필수!)
+    - "Priority"     # select
+    - "Order"        # number (정렬용!)
+    - "Sprint"       # select
+    - "Assignee"     # text
+    - "Estimate"     # text
+    - "Due Date"     # date
+    - "Depends On"   # text
+    - "Stage"        # select
+
+  # 기본 뷰 설정
+  views:
+    - name: "Board View"
+      type: "board"
+      group_by: "Status"
+
+    - name: "List View"
+      type: "table"
+      sort_by: "Order"
+      sort_direction: "ascending"
+
+    - name: "Sprint View"
+      type: "board"
+      group_by: "Sprint"
+      filter:
+        - "Status != Done"

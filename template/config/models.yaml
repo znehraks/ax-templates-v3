@@ -1,0 +1,242 @@
+# ax-templates AI Models Configuration
+# Model assignments, specialization, and dynamic selection settings
+
+models:
+  # Claude Code (Anthropic)
+  claudecode:
+    provider: "anthropic"
+    model_id: "claude-sonnet-4-20250514"
+    description: "Primary coding agent with tool use"
+    capabilities:
+      - "code_generation"
+      - "code_review"
+      - "debugging"
+      - "tool_use"
+      - "mcp_integration"
+    modes:
+      plan: "Plan mode with user confirmation"
+      plan_sandbox: "Plan mode with sandboxed execution"
+      yolo: "Autonomous execution (container only)"
+      headless: "CI/CD headless mode"
+    context_limit: 200000
+
+    # AI Specialization (신규)
+    strengths:
+      - "정확한 코드 생성"
+      - "복잡한 로직 분석"
+      - "에러 디버깅"
+      - "MCP 통합"
+    best_for:
+      - "06-implementation"
+      - "08-qa"
+      - "05-task-management"
+    temperature_range:
+      min: 0.1
+      max: 0.5
+      default: 0.3
+
+  # Claude (Anthropic) - Research focused
+  claude:
+    provider: "anthropic"
+    model_id: "claude-sonnet-4-20250514"
+    description: "Research and analysis specialist"
+    capabilities:
+      - "research"
+      - "analysis"
+      - "document_synthesis"
+      - "mcp_integration"
+    modes:
+      plan: "Plan mode with structured research"
+    context_limit: 200000
+
+    # AI Specialization (신규)
+    strengths:
+      - "심층 리서치"
+      - "문서 분석 및 요약"
+      - "기술 타당성 검토"
+      - "구조화된 보고서 작성"
+    best_for:
+      - "02-research"
+    temperature_range:
+      min: 0.2
+      max: 0.6
+      default: 0.4
+
+  # Gemini (Google)
+  gemini:
+    provider: "google"
+    cli_command: "gemini"
+    description: "Brainstorming and creative planning"
+    capabilities:
+      - "brainstorming"
+      - "creative_ideation"
+      - "web_access"
+      - "multimodal"
+    modes:
+      plan: "Plan mode for structured ideation"
+      yolo: "Free-form creative exploration"
+    invocation: "tmux"
+    wrapper_script: "scripts/gemini-wrapper.sh"
+
+    # AI Specialization (신규)
+    strengths:
+      - "창의적 아이디어 생성"
+      - "다양한 관점 탐색"
+      - "빠른 아이디어 발산"
+      - "시각적 콘텐츠 분석"
+    best_for:
+      - "01-brainstorm"
+      - "03-planning"
+      - "04-ui-ux"
+    temperature_range:
+      min: 0.7
+      max: 1.0
+      default: 0.9
+
+  # Codex (OpenAI)
+  codex:
+    provider: "openai"
+    cli_command: "codex"
+    description: "Code optimization and refactoring"
+    capabilities:
+      - "code_refactoring"
+      - "test_generation"
+      - "code_optimization"
+      - "deep_analysis"
+    modes:
+      deep_dive: "Deep code analysis mode"
+      sandbox_playwright: "Sandbox with E2E testing"
+    invocation: "tmux"
+    wrapper_script: "scripts/codex-wrapper.sh"
+
+    # AI Specialization (신규)
+    strengths:
+      - "깊이 있는 코드 분석"
+      - "리팩토링 및 최적화"
+      - "테스트 생성"
+      - "기술 부채 해소"
+    best_for:
+      - "07-refactoring"
+      - "09-testing"
+    temperature_range:
+      min: 0.2
+      max: 0.6
+      default: 0.5
+
+# 동적 모델 선택 설정 (신규)
+dynamic_selection:
+  enabled: true
+  description: "태스크 특성에 따른 최적 AI 모델 자동 선택"
+
+  criteria:
+    task_type:
+      weight: 0.4
+      mapping:
+        brainstorming: "gemini"
+        creative: "gemini"
+        planning: "gemini"
+        research: "claude"
+        analysis: "claude"
+        implementation: "claudecode"
+        debugging: "claudecode"
+        refactoring: "codex"
+        testing: "codex"
+        optimization: "codex"
+
+    complexity:
+      weight: 0.3
+      thresholds:
+        simple:
+          max_lines: 100
+          prefer: "claudecode"
+        moderate:
+          max_lines: 500
+          prefer: "claudecode"
+        complex:
+          max_lines: null
+          prefer: "claudecode"
+
+    previous_performance:
+      weight: 0.3
+      enabled: true
+      lookback_days: 7
+      min_samples: 3
+
+  override_rules:
+    # Stage assignment 우선
+    stage_assignment_priority: true
+    # 사용자 지정 우선
+    user_preference_priority: true
+
+  fallback:
+    default_model: "claudecode"
+    on_error: "claudecode"
+    on_timeout: "claudecode"
+
+# Stage-to-Model Assignments
+stage_assignments:
+  "01-brainstorm":
+    primary: "gemini"
+    secondary: "claudecode"
+    collaboration: "parallel"
+
+  "02-research":
+    primary: "claude"
+    secondary: null
+    collaboration: null
+
+  "03-planning":
+    primary: "gemini"
+    secondary: null
+    collaboration: null
+
+  "04-ui-ux":
+    primary: "gemini"
+    secondary: null
+    collaboration: null
+
+  "05-task-management":
+    primary: "claudecode"
+    secondary: null
+    collaboration: null
+
+  "06-implementation":
+    primary: "claudecode"
+    secondary: null
+    collaboration: null
+
+  "07-refactoring":
+    primary: "codex"
+    secondary: "claudecode"
+    collaboration: "sequential"
+
+  "08-qa":
+    primary: "claudecode"
+    secondary: null
+    collaboration: null
+
+  "09-testing":
+    primary: "codex"
+    secondary: null
+    collaboration: null
+
+  "10-deployment":
+    primary: "claudecode"
+    secondary: null
+    collaboration: null
+
+# tmux Session Configuration
+tmux:
+  gemini_session: "ax-gemini"
+  codex_session: "ax-codex"
+  output_timeout: 300  # 5 minutes default
+  capture_method: "wait-for"  # Uses tmux wait-for for synchronization
+
+# Provider Credentials (reference only - actual values in environment)
+credentials:
+  anthropic:
+    env_var: "ANTHROPIC_API_KEY"
+  google:
+    env_var: "GOOGLE_API_KEY"
+  openai:
+    env_var: "OPENAI_API_KEY"

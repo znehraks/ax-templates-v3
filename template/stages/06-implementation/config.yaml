@@ -1,0 +1,62 @@
+# Stage 06: Implementation Configuration
+
+stage:
+  id: "06-implementation"
+  name: "Implementation"
+  description: "핵심 기능 구현"
+
+models:
+  primary: "claudecode"
+  secondary: null
+  collaboration: null
+
+execution:
+  mode: "plan_sandbox"
+  container: false
+  sandbox: true
+  timeout: 14400  # 4 hours
+
+inputs:
+  required:
+    - name: "../05-task-management/outputs/tasks.md"
+    - name: "../03-planning/outputs/architecture.md"
+    - name: "../03-planning/outputs/implementation.yaml"
+      description: "구현 규칙 (Issue #10)"
+    - name: "../05-task-management/HANDOFF.md"
+  optional:
+    - name: "../04-ui-ux/outputs/design_system.md"
+    - name: "../03-planning/outputs/tech_stack.md"
+
+outputs:
+  required:
+    - name: "source_code/"
+      description: "구현된 소스 코드"
+    - name: "implementation_log.md"
+      description: "구현 로그"
+    - name: "HANDOFF.md"
+
+prompts:
+  - name: "scaffolding"
+    file: "prompts/scaffolding.md"
+    model: "claudecode"
+  - name: "component_impl"
+    file: "prompts/component_impl.md"
+    model: "claudecode"
+  - name: "api_impl"
+    file: "prompts/api_impl.md"
+    model: "claudecode"
+
+completion:
+  checklist:
+    - "프로젝트 스캐폴딩 완료"
+    - "공통 컴포넌트 구현"
+    - "핵심 기능 구현"
+    - "API 엔드포인트 구현"
+    - "체크포인트 생성"
+
+transition:
+  next_stage: "07-refactoring"
+  prerequisites:
+    - "05-task-management"
+  handoff_required: true
+  checkpoint_required: true  # 필수!
