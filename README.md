@@ -1,7 +1,7 @@
 # claude-symphony
 
 <p align="center">
-  <img src="./assets/claude_symphony.webp" alt="Claude Symphony Logo" width="400">
+  <img src="https://raw.githubusercontent.com/znehraks/claude-symphony/main/assets/claude_symphony.webp" alt="Claude Symphony Logo" width="400">
 </p>
 
 Multi-AI Orchestration Framework for Software Development
