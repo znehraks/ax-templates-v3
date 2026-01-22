@@ -22,6 +22,14 @@ function log(message, color = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
+function displayAsciiBanner() {
+  const bannerPath = path.join(__dirname, '..', 'assets', 'claude_symphony_ascii.txt');
+  if (fs.existsSync(bannerPath)) {
+    const banner = fs.readFileSync(bannerPath, 'utf8');
+    console.log(colors.cyan + banner + colors.reset);
+  }
+}
+
 function copyRecursiveSync(src, dest) {
   const exists = fs.existsSync(src);
   const stats = exists && fs.statSync(src);
@@ -44,24 +52,24 @@ function copyRecursiveSync(src, dest) {
 
 async function collectBriefInfo() {
   console.log('');
-  log('📝 Creating project brief. (Press Enter to skip)', 'yellow');
+  log('📜 Creating project brief. (Press Enter to skip)', 'yellow');
   console.log('');
 
   const info = {};
 
   // Sequential questions (each input() must complete before proceeding)
-  info.description = await input({ message: 'One-line description:' });
-  info.problem = await input({ message: 'Problem definition (problem to solve):' });
-  info.targetUser = await input({ message: 'Target users:' });
-  info.successCriteria = await input({ message: 'Success criteria:' });
-  info.constraintSchedule = await input({ message: 'Constraints - Schedule:' });
-  info.constraintBudget = await input({ message: 'Constraints - Budget:' });
-  info.constraintTech = await input({ message: 'Constraints - Technology:' });
-  info.references = await input({ message: 'References (URL or documents):' });
+  info.description = await input({ message: '📝 One-line description:' });
+  info.problem = await input({ message: '🔍 Problem definition (problem to solve):' });
+  info.targetUser = await input({ message: '🎯 Target users:' });
+  info.successCriteria = await input({ message: '🏆 Success criteria:' });
+  info.constraintSchedule = await input({ message: '⏰ Constraints - Schedule:' });
+  info.constraintBudget = await input({ message: '💰 Constraints - Budget:' });
+  info.constraintTech = await input({ message: '⚙️ Constraints - Technology:' });
+  info.references = await input({ message: '🔗 References (URL or documents):' });
 
   // Core features - multiple inputs (separate loop)
   console.log('');
-  log('Core features (empty input to finish):', 'reset');
+  log('🎺 Core features (empty input to finish):', 'reset');
   info.features = [];
   let featureNum = 1;
   while (true) {
@@ -168,6 +176,9 @@ ${colors.yellow}After creation:${colors.reset}
       process.exit(1);
     }
   }
+
+  // Display ASCII banner
+  displayAsciiBanner();
 
   console.log('');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'cyan');

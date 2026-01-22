@@ -1,5 +1,9 @@
 # claude-symphony
 
+<p align="center">
+  <img src="./assets/claude_symphony.webp" alt="Claude Symphony Logo" width="400">
+</p>
+
 Multi-AI Orchestration Framework for Software Development
 
 [![CI](https://github.com/znehraks/claude-symphony/actions/workflows/ci.yml/badge.svg)](https://github.com/znehraks/claude-symphony/actions/workflows/ci.yml)
