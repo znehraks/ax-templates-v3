@@ -253,6 +253,11 @@ ${colors.yellow}After creation:${colors.reset}
   console.log('  → 05-task-management → 06-implementation → 07-refactoring');
   console.log('  → 08-qa → 09-testing → 10-deployment');
   console.log('');
+  log('Recommended plugin:', 'yellow');
+  console.log('  claude-hud: Context monitoring & visualization');
+  console.log('  Install: /plugin marketplace add jarrodwatts/claude-hud');
+  console.log('           /plugin install claude-hud');
+  console.log('');
 }
 
 main().catch(err => {

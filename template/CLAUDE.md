@@ -71,6 +71,49 @@
 2. **externalize_code**: Replace code blocks with file references
 3. **handoff_generation**: Externalize current state to HANDOFF.md
 
+### Context Check Protocol
+
+> Run `/context` every 5 completed tasks to check token usage.
+
+| Remaining Context | Status | Recommended Action |
+|-------------------|--------|-------------------|
+| **60%+** | Normal | Continue working |
+| **50-60%** | Warning | Consider `/compact` |
+| **40-50%** | Action | Run `/compact`, save state |
+| **<40%** | Critical | `/clear` or handoff required |
+
+**Protocol Steps:**
+1. After every 5 tasks, run `/context` to check usage
+2. If warning level reached, run `./scripts/context-manager.sh --auto-compact warning`
+3. If critical level reached, generate HANDOFF.md before `/clear`
+
+## Recommended Plugins
+
+### claude-hud (Context Monitoring)
+
+Visualizes context usage, tool activity, and todo progress in the statusline.
+
+**Installation:**
+```bash
+# Step 1: Add from marketplace
+/plugin marketplace add jarrodwatts/claude-hud
+
+# Step 2: Install plugin
+/plugin install claude-hud
+
+# Step 3: Setup (optional)
+/claude-hud:setup
+```
+
+**Features:**
+- Context window usage visualization
+- Tool activity tracking
+- Agent state monitoring
+- Todo progress display
+- Git branch info
+
+**GitHub:** https://github.com/jarrodwatts/claude-hud
+
 ## Stage Transition Protocol
 
 ### Required Sequence

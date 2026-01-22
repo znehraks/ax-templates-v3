@@ -44,6 +44,46 @@ User interface and experience design stage
 - `../03-planning/outputs/architecture.md`
 - `../03-planning/HANDOFF.md`
 
+## Moodboard Analysis
+
+> Configuration: `config/ui-ux.yaml`
+
+When images are present in `inputs/moodboard/`, analyze them using vision capabilities:
+
+### Directory Structure
+```
+inputs/moodboard/
+├── ui-references/    # Reference UI screenshots
+├── brand-assets/     # Brand colors, logos, typography
+└── sketches/         # Wireframes and hand-drawn sketches
+```
+
+### Analysis Workflow
+
+1. **ui-references/** - Reference UI Screenshots
+   - Identify UI patterns and components
+   - Extract layout structures
+   - Note interaction patterns
+
+2. **brand-assets/** - Brand Assets
+   - Extract color palette (primary, secondary, accent)
+   - Identify typography styles
+   - Document logo usage guidelines
+
+3. **sketches/** - Wireframes & Sketches
+   - Interpret hand-drawn wireframes
+   - Map sketch elements to components
+   - Identify user flow intentions
+
+### Vision Analysis Checklist
+- [ ] Extract color palette from brand assets
+- [ ] Identify layout patterns from references
+- [ ] Map sketch elements to component suggestions
+- [ ] Document design constraints from references
+- [ ] Generate initial component list from analysis
+
+**Note:** AI analyzes images manually using vision capabilities. No automated scripts required.
+
 ## Output Files
 - `outputs/wireframes.md` - Wireframes (ASCII/Mermaid)
 - `outputs/user_flows.md` - User flows

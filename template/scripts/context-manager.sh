@@ -63,11 +63,62 @@ get_current_stage() {
     fi
 }
 
-# Estimate tokens (simple estimation)
+# Estimate tokens (content-based estimation)
+# Token estimation rules:
+# - English: word count × 1.3
+# - Korean: character count × 0.5
+# - Code: line count × 10
 estimate_tokens() {
-    # In practice, conversation logs should be analyzed, but this is a placeholder
-    # Actual implementation would reference Claude API or log files
-    echo "45000"  # placeholder
+    local total_tokens=0
+    local current_stage=$(get_current_stage)
+
+    # Scan stage outputs for token estimation
+    local stage_dir="$PROJECT_ROOT/stages/$current_stage/outputs"
+    if [ -d "$stage_dir" ]; then
+        for file in "$stage_dir"/*.md "$stage_dir"/*.txt 2>/dev/null; do
+            [ -f "$file" ] || continue
+
+            local content=$(cat "$file")
+
+            # Count English words (ASCII alphanumeric sequences)
+            local english_words=$(echo "$content" | grep -oE '[a-zA-Z]+' | wc -w | tr -d ' ')
+
+            # Count Korean characters (Hangul range: AC00-D7AF)
+            local korean_chars=$(echo "$content" | grep -oE '[\xEA-\xED][\x80-\xBF][\x80-\xBF]' 2>/dev/null | wc -c | tr -d ' ')
+            korean_chars=$((korean_chars / 3))  # UTF-8 Korean chars are 3 bytes
+
+            # Calculate tokens for this file
+            local file_tokens=$(( (english_words * 13 / 10) + (korean_chars / 2) ))
+            total_tokens=$((total_tokens + file_tokens))
+        done
+    fi
+
+    # Scan code files
+    local project_src="$PROJECT_ROOT/src"
+    if [ -d "$project_src" ]; then
+        local code_lines=$(find "$project_src" -type f \( -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.py" -o -name "*.go" \) -exec wc -l {} + 2>/dev/null | tail -1 | awk '{print $1}')
+        if [ -n "$code_lines" ] && [ "$code_lines" -gt 0 ]; then
+            total_tokens=$((total_tokens + code_lines * 10))
+        fi
+    fi
+
+    # Scan HANDOFF files
+    for handoff in "$PROJECT_ROOT"/stages/*/HANDOFF.md 2>/dev/null; do
+        [ -f "$handoff" ] || continue
+        local handoff_words=$(wc -w < "$handoff" 2>/dev/null | tr -d ' ')
+        total_tokens=$((total_tokens + handoff_words * 13 / 10))
+    done
+
+    # Add base context overhead (conversation history estimate)
+    local base_overhead=10000
+    total_tokens=$((total_tokens + base_overhead))
+
+    # Minimum floor for realistic estimation
+    if [ "$total_tokens" -lt 15000 ]; then
+        total_tokens=15000
+    fi
+
+    echo "$total_tokens"
 }
 
 # Generate progress bar

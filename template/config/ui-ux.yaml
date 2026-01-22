@@ -1,0 +1,31 @@
+# UI/UX Configuration
+# Settings for the 04-ui-ux stage
+
+moodboard:
+  enabled: true
+  supported_formats: [png, jpg, webp, svg]
+  max_images: 10
+
+  directories:
+    ui_references: "stages/04-ui-ux/inputs/moodboard/ui-references"
+    brand_assets: "stages/04-ui-ux/inputs/moodboard/brand-assets"
+    sketches: "stages/04-ui-ux/inputs/moodboard/sketches"
+
+  analysis:
+    # AI will analyze images using vision capabilities
+    extract_colors: true
+    identify_layouts: true
+    suggest_components: true
+
+design_system:
+  # Design system generation settings
+  auto_generate: true
+  include_spacing: true
+  include_typography: true
+  include_colors: true
+
+wireframes:
+  # Wireframe output format
+  format: "ascii"  # ascii | mermaid | both
+  responsive: true
+  breakpoints: [mobile, tablet, desktop]
