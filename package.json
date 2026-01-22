@@ -1,6 +1,6 @@
 {
   "name": "claude-symphony",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Multi-AI Orchestration Framework - Create new projects with 10-stage development workflow",
   "type": "module",
   "bin": {
@@ -8,7 +8,8 @@
   },
   "files": [
     "bin/",
-    "template/"
+    "template/",
+    "assets/"
   ],
   "scripts": {
     "create": "node bin/create.js"
