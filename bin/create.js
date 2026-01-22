@@ -59,14 +59,14 @@ async function collectBriefInfo() {
   const info = {};
 
   // Sequential questions (each input() must complete before proceeding)
-  info.description = await input({ message: '📝 One-line description:' });
-  info.problem = await input({ message: '🔍 Problem definition (problem to solve):' });
-  info.targetUser = await input({ message: '🎯 Target users:' });
-  info.successCriteria = await input({ message: '🏆 Success criteria:' });
-  info.constraintSchedule = await input({ message: '⏰ Constraints - Schedule:' });
-  info.constraintBudget = await input({ message: '💰 Constraints - Budget:' });
-  info.constraintTech = await input({ message: '⚙️ Constraints - Technology:' });
-  info.references = await input({ message: '🔗 References (URL or documents):' });
+  info.description = await input({ message: '📝 One-line description (Enter to skip):' });
+  info.problem = await input({ message: '🔍 Problem definition (Enter to skip):' });
+  info.targetUser = await input({ message: '🎯 Target users (Enter to skip):' });
+  info.successCriteria = await input({ message: '🏆 Success criteria (Enter to skip):' });
+  info.constraintSchedule = await input({ message: '⏰ Constraints - Schedule (Enter to skip):' });
+  info.constraintBudget = await input({ message: '💰 Constraints - Budget (Enter to skip):' });
+  info.constraintTech = await input({ message: '⚙️ Constraints - Technology (Enter to skip):' });
+  info.references = await input({ message: '🔗 References (Enter to skip):' });
 
   // Core features - multiple inputs (separate loop)
   console.log('');
@@ -75,7 +75,11 @@ async function collectBriefInfo() {
   let featureNum = 1;
   while (true) {
     const feature = await input({ message: `  ${featureNum}.` });
-    if (!feature) break;
+    if (!feature) {
+      // Clear the empty line (move up and clear)
+      process.stdout.write('\x1b[1A\x1b[2K');
+      break;
+    }
     info.features.push(feature);
     featureNum++;
   }
@@ -342,33 +346,33 @@ ${colors.yellow}After creation:${colors.reset}
   log(`✓ Project '${actualProjectName}' created successfully!`, 'green');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'green');
   console.log('');
-  log('Next steps:', 'yellow');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+  log('🚀 Next steps:', 'yellow');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+  console.log('');
   if (projectName !== '.') {
     console.log(`  1. cd ${projectName}`);
-    console.log('  2. Edit stages/01-brainstorm/inputs/project_brief.md');
-    console.log('  3. Run /run-stage 01-brainstorm');
+    console.log('  2. claude                      ← Start Claude Code');
+    console.log('  3. Install plugin (in Claude Code):');
+    log('     /plugin marketplace add jarrodwatts/claude-hud', 'cyan');
+    log('     /plugin install claude-hud', 'cyan');
+    console.log('  4. Edit stages/01-brainstorm/inputs/project_brief.md');
+    console.log('  5. Run /run-stage 01-brainstorm');
   } else {
-    console.log('  1. Edit stages/01-brainstorm/inputs/project_brief.md');
-    console.log('  2. Run /run-stage 01-brainstorm');
+    console.log('  1. claude                      ← Start Claude Code');
+    console.log('  2. Install plugin (in Claude Code):');
+    log('     /plugin marketplace add jarrodwatts/claude-hud', 'cyan');
+    log('     /plugin install claude-hud', 'cyan');
+    console.log('  3. Edit stages/01-brainstorm/inputs/project_brief.md');
+    console.log('  4. Run /run-stage 01-brainstorm');
   }
   console.log('');
-  log('Pipeline stages:', 'cyan');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'cyan');
+  log('📋 Pipeline stages:', 'cyan');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'cyan');
   console.log('  01-brainstorm → 02-research → 03-planning → 04-ui-ux');
   console.log('  → 05-task-management → 06-implementation → 07-refactoring');
   console.log('  → 08-qa → 09-testing → 10-deployment');
-  console.log('');
-  // Plugin installation message (more prominent)
-  console.log('');
-  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
-  log('🎯 Recommended: Install claude-hud plugin', 'yellow');
-  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
-  console.log('');
-  console.log('  claude-hud visualizes context usage, tool activity, and progress.');
-  console.log('');
-  console.log('  Run these commands in Claude Code:');
-  console.log('');
-  log('    /plugin marketplace add jarrodwatts/claude-hud', 'cyan');
-  log('    /plugin install claude-hud', 'cyan');
   console.log('');
 }
 
