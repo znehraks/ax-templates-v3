@@ -16,6 +16,9 @@ build/
 *.swo
 *~
 
+# MCP tools
+.serena/
+
 # OS
 .DS_Store
 Thumbs.db
