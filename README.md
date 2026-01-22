@@ -6,7 +6,6 @@
 
 Multi-AI Orchestration Framework for Software Development
 
-[![CI](https://github.com/znehraks/claude-symphony/actions/workflows/ci.yml/badge.svg)](https://github.com/znehraks/claude-symphony/actions/workflows/ci.yml)
 [![npm version](https://badge.fury.io/js/claude-symphony.svg)](https://www.npmjs.com/package/claude-symphony)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
