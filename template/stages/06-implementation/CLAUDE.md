@@ -90,6 +90,45 @@ cd project-name
 - Create checkpoint upon each sprint completion
 - Create checkpoint upon major feature completion
 
+---
+
+## Iterative Development Mode
+
+> Stage 06 operates in **sprint-based iterative mode**.
+
+### Sprint Workflow
+
+1. Sprint Start → Task Progress → Sprint Complete
+2. `/next` → Auto-advance to next Sprint (if Sprints remain)
+3. After all Sprints complete, `/next` → Transition to Stage 07
+
+### Sprint Commands
+
+| Command | Description |
+|---------|-------------|
+| `/sprint` | Show current Sprint status |
+| `/sprint tasks` | List tasks for current Sprint |
+| `/next` | Sprint remaining → Next Sprint / Complete → Stage 07 |
+| `/next --stage` | Force Stage transition (skip Sprints, not recommended) |
+
+### Sprint Completion Criteria
+
+Each Sprint completion requires:
+- [ ] All Must tasks completed
+- [ ] `npm run lint` passed
+- [ ] `npm run typecheck` passed
+- [ ] Sprint checkpoint created
+
+### Sprint HANDOFF
+
+On Sprint transition, `SPRINT_HANDOFF_N.md` is auto-generated:
+- Completed tasks list
+- Test results summary
+- Checkpoint reference
+- Next Sprint focus
+
+---
+
 ## Implementation Principles
 1. Commit in small units
 2. Write testable code

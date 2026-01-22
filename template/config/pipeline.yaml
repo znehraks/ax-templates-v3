@@ -355,3 +355,53 @@ forking:
     compare: "/fork compare"
     merge: "/fork merge"
     delete: "/fork delete"
+
+# ============================================
+# Sprint Mode Configuration
+# ============================================
+sprint_mode:
+  enabled: true
+  type: "sprint_based"  # single_pass | sprint_based | spiral
+
+  sprint_config:
+    enabled: true
+    source: "stages/05-task-management/outputs/sprint_plan.md"
+    default_sprints: 3
+    auto_detect: true
+
+    completion_criteria:
+      require_all_must_tasks: true
+      require_tests_pass: true
+      allow_force_complete: true
+
+  stage_iterations:
+    "06-implementation":
+      iterative: true
+      iteration_unit: "sprint"
+      completion_check: "all_sprints_complete"
+
+  loop_back:
+    enabled: true
+    max_stages_back: 3
+
+    triggers:
+      - name: "bug_found"
+        from_stages: ["08-qa", "09-testing"]
+        to_stage: "06-implementation"
+        auto_suggest: true
+
+      - name: "requirements_change"
+        from_stages: ["*"]
+        to_stage: "03-planning"
+        require_confirmation: true
+
+      - name: "feature_addition"
+        from_stages: ["07-refactoring"]
+        to_stage: "06-implementation"
+        auto_suggest: true
+
+    on_loop_back:
+      - create_checkpoint
+      - record_reason
+      - update_handoff
+      - notify_user

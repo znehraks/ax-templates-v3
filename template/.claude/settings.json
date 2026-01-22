@@ -24,7 +24,6 @@
     "stop": ".claude/hooks/stop.sh - auto /compact",
     "session_start": ".claude/hooks/session-start.sh - auto recovery"
   },
-
   "commands": {
     "init-project": {
       "description": "Initialize new project",
@@ -127,7 +126,6 @@
       "file": "commands/validate.md"
     }
   },
-
   "skills": {
     "smart-handoff": {
       "description": "Smart context extraction and HANDOFF generation",

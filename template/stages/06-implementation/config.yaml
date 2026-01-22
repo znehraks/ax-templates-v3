@@ -54,9 +54,25 @@ completion:
     - "API endpoints implemented"
     - "Checkpoint created"
 
+sprint_mode:
+  enabled: true
+  unit: "sprint"
+
+  completion:
+    require_all_sprints: true
+    per_sprint_criteria:
+      - "must_tasks_complete"
+      - "lint_pass"
+      - "typecheck_pass"
+
+  checkpoints:
+    per_sprint: true
+    naming: "sprint_{{n}}_{{timestamp}}"
+
 transition:
   next_stage: "07-refactoring"
   prerequisites:
     - "05-task-management"
   handoff_required: true
   checkpoint_required: true  # Required!
+  sprint_completion_required: true

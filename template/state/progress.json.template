@@ -8,6 +8,32 @@
     "completed_at": null
   },
   "current_stage": null,
+  "current_iteration": {
+    "type": "sprint",
+    "current_sprint": 1,
+    "total_sprints": 3
+  },
+  "sprints": {
+    "Sprint 1": {
+      "status": "pending",
+      "tasks_total": 0,
+      "tasks_completed": 0,
+      "checkpoint_id": null
+    },
+    "Sprint 2": {
+      "status": "pending",
+      "tasks_total": 0,
+      "tasks_completed": 0,
+      "checkpoint_id": null
+    },
+    "Sprint 3": {
+      "status": "pending",
+      "tasks_total": 0,
+      "tasks_completed": 0,
+      "checkpoint_id": null
+    }
+  },
+  "loop_back_history": [],
   "stages": {
     "01-brainstorm": {
       "status": "pending",

@@ -39,6 +39,7 @@
   },
   "homepage": "https://github.com/znehraks/claude-symphony#readme",
   "dependencies": {
-    "@inquirer/prompts": "^7.10.1"
+    "@inquirer/prompts": "^7.10.1",
+    "js-yaml": "^4.1.0"
   }
 }

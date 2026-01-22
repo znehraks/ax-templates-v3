@@ -3,7 +3,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { input } from '@inquirer/prompts';
+import { input, confirm } from '@inquirer/prompts';
+import yaml from 'js-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -79,7 +80,104 @@ async function collectBriefInfo() {
     featureNum++;
   }
 
+  // === Development mode configuration ===
+  console.log('');
+  log('⚙️ Development mode configuration', 'yellow');
+
+  info.sprintMode = await confirm({
+    message: '🔄 Enable sprint-based iterative development?',
+    default: true
+  });
+
+  if (info.sprintMode) {
+    info.defaultSprints = await input({
+      message: '📊 Default number of sprints:',
+      default: '3',
+      validate: (v) => {
+        const num = parseInt(v);
+        if (isNaN(num) || num < 1) return 'Enter a number >= 1';
+        if (num > 100) return '⚠️ Maximum 100 sprints allowed';
+        return true;
+      }
+    });
+  }
+
+  info.notionEnabled = await confirm({
+    message: '📋 Enable Notion task integration?',
+    default: true
+  });
+
   return info;
+}
+
+function applyConfigSettings(targetDir, info) {
+  const pipelinePath = path.join(targetDir, 'config', 'pipeline.yaml');
+  const taskConfigPath = path.join(targetDir, 'stages', '05-task-management', 'config.yaml');
+  const progressPath = path.join(targetDir, 'state', 'progress.json');
+
+  // Sprint mode settings
+  if (fs.existsSync(pipelinePath)) {
+    try {
+      let content = fs.readFileSync(pipelinePath, 'utf8');
+      const config = yaml.load(content);
+
+      if (config.sprint_mode) {
+        config.sprint_mode.enabled = info.sprintMode ?? true;
+        config.sprint_mode.sprint_config.default_sprints = parseInt(info.defaultSprints) || 3;
+      }
+
+      fs.writeFileSync(pipelinePath, yaml.dump(config, { lineWidth: -1 }));
+    } catch (e) {
+      // Silently continue if YAML parsing fails
+    }
+  }
+
+  // Notion settings (if config exists)
+  if (fs.existsSync(taskConfigPath)) {
+    try {
+      let content = fs.readFileSync(taskConfigPath, 'utf8');
+      const config = yaml.load(content);
+
+      if (config && !config.notion_integration) {
+        config.notion_integration = { enabled: info.notionEnabled ?? true };
+      } else if (config && config.notion_integration) {
+        config.notion_integration.enabled = info.notionEnabled ?? true;
+      }
+
+      fs.writeFileSync(taskConfigPath, yaml.dump(config, { lineWidth: -1 }));
+    } catch (e) {
+      // Silently continue if YAML parsing fails
+    }
+  }
+
+  // Update progress.json with sprint count
+  if (fs.existsSync(progressPath)) {
+    try {
+      const progress = JSON.parse(fs.readFileSync(progressPath, 'utf8'));
+      const sprintCount = parseInt(info.defaultSprints) || 3;
+
+      if (progress.current_iteration) {
+        progress.current_iteration.total_sprints = sprintCount;
+      }
+
+      // Regenerate sprints object based on count
+      if (progress.sprints) {
+        progress.sprints = {};
+        for (let i = 1; i <= sprintCount; i++) {
+          progress.sprints[`Sprint ${i}`] = {
+            status: "pending",
+            tasks_total: 0,
+            tasks_completed: 0,
+            checkpoint_id: null
+          };
+        }
+      }
+
+      fs.writeFileSync(progressPath, JSON.stringify(progress, null, 2));
+    } catch (e) {
+      // Silently continue if JSON parsing fails
+    }
+  }
 }
 
 function generateBriefContent(projectName, info) {
@@ -220,7 +318,13 @@ ${colors.yellow}After creation:${colors.reset}
     log('✓ progress.json initialized', 'green');
   }
 
-  // 5. Create project_brief.md
+  // 5. Apply configuration settings (sprint mode, notion)
+  if (!skipPrompts) {
+    applyConfigSettings(targetDir, briefInfo);
+    log('✓ Configuration settings applied', 'green');
+  }
+
+  // 6. Create project_brief.md
   const briefPath = path.join(targetDir, 'stages', '01-brainstorm', 'inputs', 'project_brief.md');
   const briefDir = path.dirname(briefPath);
 
@@ -232,7 +336,7 @@ ${colors.yellow}After creation:${colors.reset}
   fs.writeFileSync(briefPath, briefContent);
   log('✓ project_brief.md created', 'green');
 
-  // 6. Completion message
+  // 7. Completion message
   console.log('');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'green');
   log(`✓ Project '${actualProjectName}' created successfully!`, 'green');
@@ -253,10 +357,18 @@ ${colors.yellow}After creation:${colors.reset}
   console.log('  → 05-task-management → 06-implementation → 07-refactoring');
   console.log('  → 08-qa → 09-testing → 10-deployment');
   console.log('');
-  log('Recommended plugin:', 'yellow');
-  console.log('  claude-hud: Context monitoring & visualization');
-  console.log('  Install: /plugin marketplace add jarrodwatts/claude-hud');
-  console.log('           /plugin install claude-hud');
+  // Plugin installation message (more prominent)
+  console.log('');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+  log('🎯 Recommended: Install claude-hud plugin', 'yellow');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+  console.log('');
+  console.log('  claude-hud visualizes context usage, tool activity, and progress.');
+  console.log('');
+  console.log('  Run these commands in Claude Code:');
+  console.log('');
+  log('    /plugin marketplace add jarrodwatts/claude-hud', 'cyan');
+  log('    /plugin install claude-hud', 'cyan');
   console.log('');
 }
 

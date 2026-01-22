@@ -89,16 +89,13 @@
 
 ## Recommended Plugins
 
-### claude-hud (Context Monitoring)
+### 🎯 claude-hud (Context Monitoring) - Highly Recommended!
 
 Visualizes context usage, tool activity, and todo progress in the statusline.
 
-**Installation:**
+**Installation (run in Claude Code):**
 ```bash
-# Step 1: Add from marketplace
 /plugin marketplace add jarrodwatts/claude-hud
-
-# Step 2: Install plugin
 /plugin install claude-hud
 
 # Step 3: Setup (optional)
@@ -160,8 +157,31 @@ Visualizes context usage, tool activity, and todo progress in the statusline.
 ### Navigation Commands
 | Command | Description |
 |---------|-------------|
-| `/next` | Transition to next stage |
+| `/next` | Transition to next stage (or next Sprint in Stage 06) |
+| `/next --stage` | Force stage transition (skip Sprint check) |
 | `/restore` | Restore from checkpoint |
+
+### Sprint Commands
+| Command | Description |
+|---------|-------------|
+| `/sprint` | Show current sprint status |
+| `/sprint tasks` | List tasks for current sprint |
+| `/sprint complete` | Mark current sprint as complete |
+
+### Loop-back Commands
+| Command | Description |
+|---------|-------------|
+| `/goto <stage>` | Jump to previous stage (intentional loop-back) |
+| `/goto --list` | Show available stages for loop-back |
+| `/goto --history` | Show loop-back history |
+
+### Configuration Commands
+| Command | Description |
+|---------|-------------|
+| `/config sprint enable` | Enable sprint mode |
+| `/config sprint disable` | Disable sprint mode (single-pass) |
+| `/config sprint status` | Show current iteration settings |
+| `/config sprint count <n>` | Set default sprint count |
 
 ### Stage Shortcut Commands
 | Command | Stage |

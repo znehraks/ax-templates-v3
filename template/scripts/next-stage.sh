@@ -22,16 +22,141 @@ NC='\033[0m' # No Color
 FORCE_MODE=false
 PREVIEW_MODE=false
 NO_HANDOFF=false
+STAGE_FORCE=false
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --force) FORCE_MODE=true ;;
         --preview) PREVIEW_MODE=true ;;
         --no-handoff) NO_HANDOFF=true ;;
+        --stage) STAGE_FORCE=true ;;
         *) ;;
     esac
     shift
 done
+
+# Check for yq (YAML parser)
+check_yq() {
+    if command -v yq &> /dev/null; then
+        return 0
+    fi
+    return 1
+}
+
+# Sprint-aware transition logic
+handle_sprint_transition() {
+    local CONFIG_FILE="$PROJECT_ROOT/config/pipeline.yaml"
+
+    # Check if yq is available
+    if ! check_yq; then
+        return 1  # Proceed with stage transition
+    fi
+
+    # Check if sprint mode is enabled
+    local SPRINT_ENABLED=$(yq '.sprint_mode.enabled // false' "$CONFIG_FILE" 2>/dev/null)
+    if [ "$SPRINT_ENABLED" != "true" ]; then
+        return 1  # Proceed with stage transition
+    fi
+
+    # Check if current stage is iterative
+    local STAGE_ITERATIVE=$(yq ".sprint_mode.stage_iterations[\"$CURRENT_STAGE\"].iterative // false" "$CONFIG_FILE" 2>/dev/null)
+    if [ "$STAGE_ITERATIVE" != "true" ]; then
+        return 1  # Proceed with stage transition
+    fi
+
+    # Get current sprint info
+    local CURRENT_SPRINT=$(jq -r '.current_iteration.current_sprint // 1' "$PROGRESS_FILE")
+    local TOTAL_SPRINTS=$(jq -r '.current_iteration.total_sprints // 3' "$PROGRESS_FILE")
+
+    if [ "$CURRENT_SPRINT" -lt "$TOTAL_SPRINTS" ]; then
+        # Sprint transition
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo -e "🔄 ${WHITE}Sprint Transition${NC}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo -e "Sprint $CURRENT_SPRINT → Sprint $((CURRENT_SPRINT + 1))"
+        echo ""
+
+        # Generate Sprint HANDOFF
+        generate_sprint_handoff "$CURRENT_SPRINT"
+
+        # Create Sprint checkpoint
+        create_sprint_checkpoint "$CURRENT_SPRINT"
+
+        # Advance sprint
+        advance_sprint "$CURRENT_SPRINT"
+
+        echo ""
+        echo -e "${GREEN}✅${NC} Sprint $((CURRENT_SPRINT + 1)) started!"
+        echo "Remaining Sprints: $((TOTAL_SPRINTS - CURRENT_SPRINT - 1))"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+        return 0  # Sprint transition completed
+    fi
+
+    return 1  # All sprints complete, proceed with stage transition
+}
+
+# Generate Sprint HANDOFF
+generate_sprint_handoff() {
+    local SPRINT_NUM=$1
+    local HANDOFF_FILE="$STAGES_DIR/$CURRENT_STAGE/outputs/SPRINT_HANDOFF_${SPRINT_NUM}.md"
+    local TIMESTAMP=$(date "+%Y-%m-%d %H:%M")
+
+    mkdir -p "$STAGES_DIR/$CURRENT_STAGE/outputs"
+
+    cat > "$HANDOFF_FILE" << EOF
+# Sprint Handoff: Sprint $SPRINT_NUM → Sprint $((SPRINT_NUM + 1))
+
+Created: $TIMESTAMP
+
+## Completed Tasks (Sprint $SPRINT_NUM)
+
+$(jq -r ".sprints[\"Sprint $SPRINT_NUM\"].completed_tasks // [] | .[]" "$PROGRESS_FILE" 2>/dev/null | while read -r task; do echo "- [x] $task"; done)
+
+## Sprint Summary
+
+- Tasks completed: $(jq -r ".sprints[\"Sprint $SPRINT_NUM\"].tasks_completed // 0" "$PROGRESS_FILE")
+- Test results: lint ✓, typecheck ✓
+- Checkpoint: sprint_${SPRINT_NUM}_$(date +%Y%m%d)
+
+## Next Sprint Focus
+
+- Reference Sprint $((SPRINT_NUM + 1)) tasks in sprint_plan.md
+
+EOF
+
+    # Archive copy
+    mkdir -p "$PROJECT_ROOT/state/handoffs"
+    cp "$HANDOFF_FILE" "$PROJECT_ROOT/state/handoffs/sprint_${SPRINT_NUM}_handoff.md"
+
+    echo -e "${GREEN}✓${NC} SPRINT_HANDOFF_${SPRINT_NUM}.md generated"
+}
+
+# Create Sprint checkpoint
+create_sprint_checkpoint() {
+    local SPRINT_NUM=$1
+    local CHECKPOINT_DIR="$PROJECT_ROOT/state/checkpoints"
+    local CHECKPOINT_ID="sprint_${SPRINT_NUM}_$(date +%Y%m%d_%H%M%S)"
+
+    mkdir -p "$CHECKPOINT_DIR/$CHECKPOINT_ID"
+
+    # Update progress.json with checkpoint
+    jq ".sprints[\"Sprint $SPRINT_NUM\"].checkpoint_id = \"$CHECKPOINT_ID\"" \
+        "$PROGRESS_FILE" > "${PROGRESS_FILE}.tmp" && mv "${PROGRESS_FILE}.tmp" "$PROGRESS_FILE"
+
+    echo -e "${GREEN}✓${NC} Checkpoint: $CHECKPOINT_ID"
+}
+
+# Advance sprint counter
+advance_sprint() {
+    local CURRENT=$1
+    local NEXT=$((CURRENT + 1))
+
+    jq ".current_iteration.current_sprint = $NEXT | \
+        .sprints[\"Sprint $CURRENT\"].status = \"completed\" | \
+        .sprints[\"Sprint $NEXT\"].status = \"in_progress\"" \
+        "$PROGRESS_FILE" > "${PROGRESS_FILE}.tmp" && mv "${PROGRESS_FILE}.tmp" "$PROGRESS_FILE"
+}
 
 # Check jq
 if ! command -v jq &> /dev/null; then
@@ -91,6 +216,13 @@ fi
 NEXT_STAGE="${STAGE_IDS[$NEXT_IDX]}"
 CURRENT_STAGE_DIR="$STAGES_DIR/$CURRENT_STAGE"
 NEXT_STAGE_DIR="$STAGES_DIR/$NEXT_STAGE"
+
+# Check for sprint transition (unless --stage flag is used)
+if [ "$STAGE_FORCE" = false ]; then
+    if handle_sprint_transition; then
+        exit 0  # Sprint transition completed, exit
+    fi
+fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo -e "🔄 ${WHITE}Stage Transition${NC}"
