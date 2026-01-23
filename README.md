@@ -22,6 +22,10 @@ claude-symphony is a 10-stage software development workflow pipeline that orches
 - **Pipeline Forking**: Branch exploration for architecture alternatives with merge capabilities
 - **Stage Personas**: Optimized AI behavior profiles per stage (Creative Explorer, Precise Builder, etc.)
 - **Output Validation**: Automated quality checks with lint, typecheck, and coverage verification
+- **Epic Cycles**: User-defined stage range repetition with context preservation between cycles
+- **Implementation Order**: Frontend-first or backend-first development approach with reference links
+- **Requirements Refinement**: 4-level breakdown system (Epic → Feature → Task → Subtask) with INVEST validation
+- **Moodboard UX**: Interactive design reference collection with Claude Vision/Figma MCP analysis
 - **Dual Distribution**: Both NPM CLI and Claude Code plugin available
 
 ### Pipeline Stages
@@ -170,6 +174,15 @@ This monorepo contains three packages:
 | Pipeline Fork | `symphony fork` | `/fork` | Create/manage pipeline branches for exploration |
 | Output Validation | `symphony validate` | `/validate` | Validate stage outputs against quality criteria |
 
+### Workflow Commands
+
+| Command | Plugin | Description |
+|---------|--------|-------------|
+| Epic Cycle | `/epic` | Manage epic cycles (new, set-scope, set-count, history) |
+| Implementation Order | `/config order` | Set development order (frontend/backend/parallel) |
+| Moodboard | `/moodboard` | Interactive design reference collection and analysis |
+| Requirements Refine | `/refine` | Break down requirements (Epic → Feature → Task → Subtask) |
+
 ### Stage Shortcuts
 
 | Stage | CLI | Plugin |
@@ -226,7 +239,12 @@ Each project is fully self-contained with all pipeline components:
 ```
 my-project/                        # PROJECT_ROOT
 ├── .claude/                       # Claude Code configuration
-│   ├── commands/                  # Slash commands (26 commands)
+│   ├── commands/                  # Slash commands (30+ commands)
+│   │   ├── epic.md                # /epic - Epic cycle management
+│   │   ├── moodboard.md           # /moodboard - Design collection
+│   │   ├── refine.md              # /refine - Requirements refinement
+│   │   ├── config.md              # /config - Implementation order
+│   │   └── ...
 │   ├── hooks/                     # Lifecycle hooks
 │   ├── skills/                    # AI skills
 │   └── settings.json
@@ -242,14 +260,22 @@ my-project/                        # PROJECT_ROOT
 │   ├── 02-research/
 │   └── ... (10 stages total)
 ├── config/                        # Pipeline configuration
-│   ├── pipeline.yaml
-│   ├── context.yaml
-│   └── ... (15+ config files)
+│   ├── pipeline.yaml              # Core pipeline settings
+│   ├── context.yaml               # Context management
+│   ├── epic_cycles.yaml           # Epic cycle configuration
+│   ├── implementation_order.yaml  # Dev order settings
+│   ├── requirements_refinement.yaml # Refinement rules
+│   ├── ui-ux.yaml                 # Moodboard & design settings
+│   └── ... (20+ config files)
 ├── state/                         # Project state
 │   ├── progress.json              # Pipeline progress
 │   ├── checkpoints/               # Recovery points
 │   └── context/                   # Context snapshots
 ├── scripts/                       # Helper scripts
+│   ├── epic-cycle.sh              # Epic cycle management
+│   ├── moodboard-manager.sh       # Moodboard collection
+│   ├── requirements-refine.sh     # Requirements refinement
+│   └── ...
 ├── CLAUDE.md                      # Main AI instructions
 ├── src/                           # Source code (from stage 06)
 └── package.json
@@ -266,6 +292,8 @@ my-project/                        # PROJECT_ROOT
 7. **Multi-AI Collaboration** - Parallel, sequential, and debate modes for AI coordination
 8. **Pipeline Forking** - Branch exploration with merge capabilities
 9. **Smart Context Management** - Semantic compression and AI memory integration
+10. **Iterative Refinement Loops** - Epic cycles, requirements refinement, and moodboard feedback
+11. **Hierarchical Decomposition** - 4-level requirement breakdown (Epic → Feature → Task → Subtask)
 
 ## Documentation
 
