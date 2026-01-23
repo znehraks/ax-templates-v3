@@ -441,6 +441,50 @@ All defined AI models execute the same task in parallel, and each output is synt
 
 ---
 
+## Default Parallel Execution
+
+### Parallel Mode is NOW DEFAULT for:
+| Stage | Models | Synthesizer |
+|-------|--------|-------------|
+| 01-brainstorm | Gemini + ClaudeCode | ClaudeCode |
+| 03-planning | Gemini + ClaudeCode | ClaudeCode |
+| 04-ui-ux | Gemini + ClaudeCode | ClaudeCode |
+| 07-refactoring | Codex + ClaudeCode | ClaudeCode |
+| 09-testing | Codex + ClaudeCode | ClaudeCode |
+
+### Execution Policy Configuration
+> Configuration file: `config/ai_collaboration.yaml`
+
+```yaml
+execution_policy:
+  default_mode: "parallel"
+  stage_classification:
+    parallel_capable: [01-brainstorm, 03-planning, 04-ui-ux, 07-refactoring, 09-testing]
+    sequential_only: [02-research, 05-task-management, 06-implementation, 08-qa, 10-deployment]
+```
+
+### Consolidation Workflow
+Claude Code automatically consolidates parallel outputs:
+1. **Collect** - Gather all model outputs
+2. **Analyze** - Identify commonalities → HIGH CONFIDENCE
+3. **Evaluate** - Compare unique contributions
+4. **Synthesize** - Create final unified output
+5. **Validate** - Verify completeness and quality
+
+### Synthesis Commands
+```bash
+/synthesize              # Consolidate current stage outputs
+/synthesize --verbose    # Show detailed analysis
+/synthesize --dry-run    # Preview without writing
+/synthesize --force      # Re-synthesize even if output exists
+```
+
+### Quality Threshold
+- Default: 0.8 (80%)
+- Outputs below threshold trigger review prompt
+
+---
+
 ## Smart HANDOFF System
 
 > Configuration files: `config/handoff_intelligence.yaml`, `config/memory_integration.yaml`

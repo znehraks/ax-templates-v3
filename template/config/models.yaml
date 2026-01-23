@@ -187,13 +187,13 @@ stage_assignments:
 
   "03-planning":
     primary: "gemini"
-    secondary: null
-    collaboration: null
+    secondary: "claudecode"
+    collaboration: "parallel"
 
   "04-ui-ux":
     primary: "gemini"
-    secondary: null
-    collaboration: null
+    secondary: "claudecode"
+    collaboration: "parallel"
 
   "05-task-management":
     primary: "claudecode"
@@ -208,7 +208,7 @@ stage_assignments:
   "07-refactoring":
     primary: "codex"
     secondary: "claudecode"
-    collaboration: "sequential"
+    collaboration: "parallel"
 
   "08-qa":
     primary: "claudecode"
@@ -217,8 +217,8 @@ stage_assignments:
 
   "09-testing":
     primary: "codex"
-    secondary: null
-    collaboration: null
+    secondary: "claudecode"
+    collaboration: "parallel"
 
   "10-deployment":
     primary: "claudecode"

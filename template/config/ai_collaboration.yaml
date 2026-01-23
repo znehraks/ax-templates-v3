@@ -1,6 +1,47 @@
 # claude-symphony AI Collaboration Configuration
 # Multi-AI orchestration modes and collaboration strategies
 
+# Default execution policy for parallel-capable stages
+execution_policy:
+  default_mode: "parallel"
+
+  stage_classification:
+    parallel_capable:
+      - "01-brainstorm"
+      - "03-planning"
+      - "04-ui-ux"
+      - "07-refactoring"
+      - "09-testing"
+    sequential_only:
+      - "02-research"
+      - "05-task-management"
+      - "06-implementation"
+      - "08-qa"
+      - "10-deployment"
+
+# Consolidation workflow - Claude Code synthesis protocol
+consolidation_workflow:
+  synthesizer: "claudecode"
+
+  phases:
+    - name: "collect"
+      description: "Gather all parallel model outputs"
+    - name: "analyze"
+      description: "Identify commonalities and consensus"
+    - name: "evaluate"
+      description: "Compare differences and unique insights"
+    - name: "synthesize"
+      description: "Create unified output"
+    - name: "validate"
+      description: "Verify completeness and quality"
+
+  output:
+    storage_path: "state/collaborations/"
+    input_pattern: "output_{model}.md"
+    synthesis_log: "synthesis_log.md"
+
+  quality_threshold: 0.8
+
 collaboration_modes:
   # Parallel Execution: Execute same task with multiple AIs simultaneously and synthesize
   parallel_execution:
