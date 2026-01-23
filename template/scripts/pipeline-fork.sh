@@ -4,33 +4,17 @@
 
 set -e
 
+# Source common library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/common.sh"
+
 FORKS_DIR="$PROJECT_ROOT/state/forks"
-PROGRESS_FILE="$PROJECT_ROOT/state/progress.json"
 
-# Color definitions
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
-# Log functions
+# Override log functions with FORK prefix
 log_info() { echo -e "${BLUE}[FORK]${NC} $1"; }
 log_success() { echo -e "${GREEN}[FORK]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[FORK]${NC} $1"; }
 log_error() { echo -e "${RED}[FORK]${NC} $1"; }
-
-# Get current stage
-get_current_stage() {
-    if [ -f "$PROGRESS_FILE" ]; then
-        cat "$PROGRESS_FILE" 2>/dev/null | grep -o '"current_stage"[[:space:]]*:[[:space:]]*"[^"]*"' | cut -d'"' -f4
-    else
-        echo "unknown"
-    fi
-}
 
 # Create fork
 create_fork() {

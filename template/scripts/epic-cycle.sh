@@ -4,36 +4,14 @@
 
 set -e
 
+# Source common library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-PROGRESS_FILE="$PROJECT_ROOT/state/progress.json"
+source "$SCRIPT_DIR/common.sh"
+
 CONFIG_FILE="$PROJECT_ROOT/config/epic_cycles.yaml"
 ARCHIVE_DIR="$PROJECT_ROOT/state/epic_archives"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
-# Helper functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
+# log_info, log_success, log_warning, log_error are provided by common.sh
 
 # Check if jq is available
 check_dependencies() {

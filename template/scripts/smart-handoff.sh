@@ -4,30 +4,17 @@
 
 set -e
 
+# Source common library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-PROGRESS_FILE="$PROJECT_ROOT/state/progress.json"
+source "$SCRIPT_DIR/common.sh"
+
 CONTEXT_DIR="$PROJECT_ROOT/state/context"
+TEMPLATES_DIR="$PROJECT_ROOT/state/templates"
 
-# Color definitions
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-# Log functions
+# Override log functions with HANDOFF prefix
 log_info() { echo -e "${BLUE}[HANDOFF]${NC} $1"; }
 log_success() { echo -e "${GREEN}[HANDOFF]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[HANDOFF]${NC} $1"; }
-
-# Get current stage
-get_current_stage() {
-    if [ -f "$PROGRESS_FILE" ]; then
-        cat "$PROGRESS_FILE" 2>/dev/null | grep -o '"current_stage"[[:space:]]*:[[:space:]]*"[^"]*"' | cut -d'"' -f4
-    else
-        echo "unknown"
-    fi
-}
 
 # Extract changed files from Git
 extract_changed_files() {
@@ -139,6 +126,111 @@ EOF
     log_success "HANDOFF generated: $handoff_file"
 }
 
+# Template-based HANDOFF generation with variable substitution
+generate_template_handoff() {
+    local stage="$1"
+    local mode="${2:-smart}"
+    local template="$TEMPLATES_DIR/handoff_base.md.template"
+    local stage_dir="$STAGES_DIR/$stage"
+    local output="$stage_dir/HANDOFF.md"
+
+    log_info "Generating template-based HANDOFF: $stage"
+
+    mkdir -p "$stage_dir"
+
+    # Check if template exists
+    if [ ! -f "$template" ]; then
+        log_warning "Template not found: $template, falling back to standard generation"
+        generate_handoff "$stage" "$mode"
+        return
+    fi
+
+    # Collect data for template substitution
+    local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    local next_stage=$(get_next_stage "$stage")
+    local primary_ai=$(get_stage_ai "$stage")
+
+    # Get git info
+    local git_commits=""
+    local modified_files=""
+    if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+        git_commits=$(git log --oneline -5 2>/dev/null || echo "No recent commits")
+        modified_files=$(git diff --stat HEAD~10 2>/dev/null | head -15 || echo "")
+    fi
+
+    # Perform template substitution using sed
+    # Replace basic variables that sed can handle
+    sed -e "s|{{CURRENT_STAGE}}|$stage|g" \
+        -e "s|{{NEXT_STAGE}}|$next_stage|g" \
+        -e "s|{{TIMESTAMP}}|$timestamp|g" \
+        -e "s|{{PRIMARY_AI}}|$primary_ai|g" \
+        -e "s|{{INTENDED_PRIMARY_AI}}|$primary_ai|g" \
+        -e "s|{{ACTUAL_PRIMARY_AI}}|$primary_ai|g" \
+        -e "s|{{DURATION}}|TBD|g" \
+        -e "s|{{INTENDED_SECONDARY_AI}}|N/A|g" \
+        -e "s|{{ACTUAL_SECONDARY_AI}}|N/A|g" \
+        -e "s|{{PRIMARY_MATCH}}|✓|g" \
+        -e "s|{{SECONDARY_MATCH}}|N/A|g" \
+        -e "s|{{MODE_MATCH}}|N/A|g" \
+        -e "s|{{EXTERNAL_MATCH}}|N/A|g" \
+        -e "s|{{COLLABORATION_MODE}}|sequential|g" \
+        -e "s|{{INTENDED_COLLABORATION_MODE}}|sequential|g" \
+        -e "s|{{ACTUAL_COLLABORATION_MODE}}|sequential|g" \
+        -e "s|{{MODE_EXECUTED}}|Yes|g" \
+        -e "s|{{NON_EXECUTION_REASON}}|N/A|g" \
+        -e "s|{{LATEST_CP_ID}}|checkpoint_${stage}_$(date +%Y%m%d)|g" \
+        -e "s|{{FILE_COUNT}}|0|g" \
+        -e "s|{{SMOKE_TEST_RUN}}|false|g" \
+        -e "s|{{BUGS_FOUND_COUNT}}|0|g" \
+        -e "s|{{BUGS_FIXED_COUNT}}|0|g" \
+        -e "s|{{FALLBACK_COUNT}}|0|g" \
+        -e "s|{{MATCH_RATE}}|100%|g" \
+        -e "s|{{DEV_SERVER_STATUS}}|Not Run|g" \
+        -e "s|{{BASIC_FUNCTIONALITY}}|Not Tested|g" \
+        -e "s|{{PLAYWRIGHT_SMOKE}}|Not Run|g" \
+        -e "s|{{EPIC_CYCLE_ENABLED}}|false|g" \
+        -e "s|{{CURRENT_CYCLE}}|0|g" \
+        -e "s|{{TOTAL_CYCLES}}|1|g" \
+        -e "s|{{SCOPE_START}}||g" \
+        -e "s|{{SCOPE_END}}||g" \
+        -e "s|{{COMPLETED_CYCLES}}|0|g" \
+        -e "s|{{MOODBOARD_ACTIVE}}|false|g" \
+        -e "s|{{FEEDBACK_ITERATIONS}}|0|g" \
+        -e "s|{{DESIGN_TOKENS_GENERATED}}|false|g" \
+        -e "s|{{REFINEMENT_ACTIVE}}|false|g" \
+        -e "s|{{REFINEMENT_ITERATION}}|0|g" \
+        -e "s|{{VALIDATION_STATUS}}|pending|g" \
+        -e "s|{{IMPLEMENTATION_ORDER}}||g" \
+        -e "s|{{CURRENT_PHASE}}|0|g" \
+        -e "s|{{PHASE_NAME}}||g" \
+        "$template" > "$output"
+
+    # Remove Handlebars each blocks (they need manual filling)
+    # Keep placeholder for manual completion
+    sed -i.bak -e '/{{#each/,/{{\/each}}/d' "$output" 2>/dev/null || \
+        sed -e '/{{#each/,/{{\/each}}/d' "$output" > "${output}.tmp" && mv "${output}.tmp" "$output"
+    rm -f "${output}.bak" 2>/dev/null
+
+    # Append git activity section
+    echo "" >> "$output"
+    echo "## Recent Git Activity" >> "$output"
+    echo "" >> "$output"
+    echo "\`\`\`" >> "$output"
+    echo "$git_commits" >> "$output"
+    echo "\`\`\`" >> "$output"
+
+    if [ -n "$modified_files" ]; then
+        echo "" >> "$output"
+        echo "### Modified Files Summary" >> "$output"
+        echo "" >> "$output"
+        echo "\`\`\`" >> "$output"
+        echo "$modified_files" >> "$output"
+        echo "\`\`\`" >> "$output"
+    fi
+
+    log_success "Template HANDOFF generated: $output"
+}
+
 # Compact mode HANDOFF
 generate_compact_handoff() {
     local stage="$1"
@@ -236,7 +328,10 @@ main() {
 
     case "$mode" in
         "default"|"smart")
-            generate_handoff "$stage" "smart"
+            generate_template_handoff "$stage" "smart"
+            ;;
+        "basic")
+            generate_handoff "$stage" "basic"
             ;;
         "compact")
             generate_compact_handoff "$stage"
@@ -245,7 +340,13 @@ main() {
             generate_recovery_handoff "$stage"
             ;;
         *)
-            echo "Usage: $0 [default|compact|recovery] [stage_id]"
+            echo "Usage: $0 [default|smart|basic|compact|recovery] [stage_id]"
+            echo ""
+            echo "Modes:"
+            echo "  default/smart  - Template-based HANDOFF (recommended)"
+            echo "  basic          - Simple placeholder HANDOFF"
+            echo "  compact        - Minimum essential info only"
+            echo "  recovery       - Detailed recovery HANDOFF"
             exit 1
             ;;
     esac

@@ -206,6 +206,13 @@ Visualizes context usage, tool activity, and todo progress in the statusline.
 | `/moodboard analyze` | Extract colors, fonts, styles from collected images |
 | `/moodboard skip` | Skip moodboard collection (use AI-generated design) |
 
+### Task Management & Sync Commands
+| Command | Description |
+|---------|-------------|
+| `/sync notion` | Sync tasks with Notion database |
+| `/synthesize` | Consolidate parallel AI outputs |
+| `/synthesize --verbose` | Show detailed synthesis analysis |
+
 ## Skills (Auto-Activated)
 
 | Skill | Trigger | Description |
@@ -426,6 +433,54 @@ Quick reference for frequently accessed files:
 - **API quota exceeded**: Automatic switch to fallback provider
 - **Response quality insufficient**: Manual switch recommended
 - **Timeout**: Retry with fallback after 30 seconds
+
+---
+
+## Notion Integration Guide
+
+> Configuration file: `stages/05-task-management/config.yaml`
+> Detailed guide: `stages/05-task-management/templates/notion_integration.md`
+
+### Quick Setup
+
+1. **Enable Notion MCP** in your Claude Code settings
+2. **Configure workspace** in `stages/05-task-management/config.yaml`:
+   ```yaml
+   notion_integration:
+     enabled: true
+     workspace_name: "Your Workspace"
+   ```
+
+### Usage by Stage
+
+| Stage | Notion Usage | Command |
+|-------|--------------|---------|
+| 05-task-management | Task database creation | Auto |
+| 06-implementation | Progress tracking | `/sync notion` |
+| 08-qa | Bug tracking | Auto |
+
+### Task Creation Rules (Critical)
+
+> ⚠️ **Sequential creation required** - Notion API may fail with concurrent requests
+
+```yaml
+task_creation:
+  mode: "sequential"
+  batch_size: 1
+  delay_ms: 100
+```
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| MCP connection failed | Check Notion MCP server status |
+| Permission denied | Verify workspace access token |
+| Duplicate tasks | Enable `check_duplicates: true` |
+
+### Disable Notion (Optional)
+
+Set `notion_integration.enabled: false` to use markdown-based task management instead.
 
 ---
 

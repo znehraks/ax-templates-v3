@@ -66,6 +66,37 @@ User interface and experience design stage
 - `../03-planning/outputs/architecture.md`
 - `../03-planning/HANDOFF.md`
 
+## Prerequisites Before UI/UX Design
+
+> ⚠️ **Important**: Verify previous stage deliverables before starting UI/UX design
+
+### Required Deliverables Check
+| Stage | Required File | Validation |
+|-------|---------------|------------|
+| Stage 03 | `stages/03-planning/outputs/architecture.md` | Architecture defined |
+| Stage 03 | `stages/03-planning/outputs/implementation.yaml` | Design constraints documented |
+| Stage 03 | `stages/03-planning/HANDOFF.md` | Stage 03 handoff reviewed |
+| Stage 01 | `stages/01-brainstorm/outputs/requirements_analysis.md` | User needs identified |
+
+### Moodboard Setup Requirement
+Before proceeding with wireframe design:
+
+1. **Ask User**: "디자인 참고 자료(무드보드)를 제공하시겠습니까?"
+2. **If Yes**: Collect URLs, images, color preferences via `/moodboard`
+3. **If No**: Explicitly confirm AI-generated design is acceptable
+
+```bash
+# Verify prerequisites
+/moodboard          # Start interactive moodboard flow
+/moodboard add      # Add design references directly
+/moodboard skip     # Skip moodboard (AI auto-generate)
+```
+
+### Validation Checkpoint
+- [ ] Stage 03 HANDOFF.md reviewed
+- [ ] User confirmed moodboard approach (collect or skip)
+- [ ] Brand guidelines provided (if available)
+
 ## Moodboard Analysis
 
 > Configuration: `config/ui-ux.yaml`

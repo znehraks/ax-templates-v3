@@ -4,20 +4,12 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PROGRESS_FILE="$PROJECT_ROOT/state/progress.json"
+# Source common library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common.sh"
+
 CONTEXT_DIR="$PROJECT_ROOT/state/context"
 SETTINGS_FILE="$PROJECT_ROOT/.claude/settings.json"
-
-# Color definitions
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-WHITE='\033[1;37m'
-GRAY='\033[0;90m'
-NC='\033[0m' # No Color
 
 # Defaults
 WARNING_THRESHOLD=50000
@@ -54,15 +46,6 @@ while [[ "$#" -gt 0 ]]; do
     shift 2>/dev/null || true
 done
 
-# Get current stage
-get_current_stage() {
-    if [ -f "$PROGRESS_FILE" ] && command -v jq &> /dev/null; then
-        jq -r '.current_stage // "none"' "$PROGRESS_FILE"
-    else
-        echo "unknown"
-    fi
-}
-
 # Estimate tokens (content-based estimation)
 # Token estimation rules:
 # - English: word count × 1.3
@@ -75,7 +58,8 @@ estimate_tokens() {
     # Scan stage outputs for token estimation
     local stage_dir="$PROJECT_ROOT/stages/$current_stage/outputs"
     if [ -d "$stage_dir" ]; then
-        for file in "$stage_dir"/*.md "$stage_dir"/*.txt 2>/dev/null; do
+        shopt -s nullglob
+        for file in "$stage_dir"/*.md "$stage_dir"/*.txt; do
             [ -f "$file" ] || continue
 
             local content=$(cat "$file")
@@ -91,6 +75,7 @@ estimate_tokens() {
             local file_tokens=$(( (english_words * 13 / 10) + (korean_chars / 2) ))
             total_tokens=$((total_tokens + file_tokens))
         done
+        shopt -u nullglob
     fi
 
     # Scan code files
@@ -103,11 +88,13 @@ estimate_tokens() {
     fi
 
     # Scan HANDOFF files
-    for handoff in "$PROJECT_ROOT"/stages/*/HANDOFF.md 2>/dev/null; do
+    shopt -s nullglob
+    for handoff in "$PROJECT_ROOT"/stages/*/HANDOFF.md; do
         [ -f "$handoff" ] || continue
         local handoff_words=$(wc -w < "$handoff" 2>/dev/null | tr -d ' ')
         total_tokens=$((total_tokens + handoff_words * 13 / 10))
     done
+    shopt -u nullglob
 
     # Add base context overhead (conversation history estimate)
     local base_overhead=10000

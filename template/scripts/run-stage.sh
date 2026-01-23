@@ -4,16 +4,48 @@
 
 set -e
 
-STAGE_ID="$1"
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+# Source common library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common.sh"
 
-# Color definitions
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+STAGE_ID="$1"
+TIMESTAMP=$(get_timestamp)
+
+# Update stage completion in progress.json
+update_stage_completion() {
+    local stage_id="$1"
+    local progress_file="$STATE_DIR/progress.json"
+    local completion_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+    if [ ! -f "$progress_file" ]; then
+        log "⚠ progress.json not found: $progress_file" "yellow"
+        return 1
+    fi
+
+    if command -v jq &> /dev/null; then
+        local next_stage=$(get_next_stage "$stage_id")
+
+        jq ".stages.\"$stage_id\".status = \"completed\" |
+            .stages.\"$stage_id\".completed_at = \"$completion_timestamp\" |
+            .stages.\"$stage_id\".handoff_generated = true |
+            .current_stage = \"$next_stage\" |
+            .pipeline.updated_at = \"$completion_timestamp\"" \
+            "$progress_file" > "${progress_file}.tmp" && \
+            mv "${progress_file}.tmp" "$progress_file"
+
+        log "✓ Stage $stage_id marked as completed" "green"
+        log "→ Next stage: $next_stage" "blue"
+    else
+        log "⚠ jq not installed - manual progress update required" "yellow"
+        return 1
+    fi
+}
+
+# Handle --complete flag for stage completion
+if [ "$1" = "--complete" ] && [ -n "$2" ]; then
+    update_stage_completion "$2"
+    exit 0
+fi
 
 # Usage
 if [ -z "$STAGE_ID" ]; then
@@ -129,6 +161,9 @@ echo ""
 echo -e "${BLUE}After completing work:${NC}"
 echo "  /handoff - Generate handoff document"
 echo "  /checkpoint [description] - Create checkpoint (stages 06, 07)"
+echo ""
+echo -e "${BLUE}Mark stage as complete:${NC}"
+echo "  ./scripts/run-stage.sh --complete $STAGE_ID"
 
 # Add AI model invoke guidance
 if [ -n "$AUTO_INVOKE_MODEL" ] && [ "$AUTO_INVOKE_MODEL" != "null" ]; then
