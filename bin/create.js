@@ -3,6 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { input, confirm, select } from '@inquirer/prompts';
 import yaml from 'js-yaml';
 
@@ -21,6 +22,113 @@ const colors = {
 
 function log(message, color = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`);
+}
+
+// Check if a command exists in the system
+function commandExists(cmd) {
+  try {
+    execSync(`which ${cmd}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Check system dependencies and display warnings
+function checkDependencies() {
+  const dependencies = {
+    required: {
+      jq: {
+        purpose: 'State management (progress.json updates)',
+        install: 'brew install jq',
+        impact: 'Pipeline state tracking will not work!'
+      },
+      yq: {
+        purpose: 'YAML config parsing (auto_invoke, model enforcement)',
+        install: 'brew install yq',
+        impact: 'Configuration settings cannot be read!'
+      }
+    },
+    optional: {
+      tmux: {
+        purpose: 'External AI wrapper sessions (Gemini/Codex)',
+        install: 'brew install tmux',
+        fallback: 'External AI calls will fail; ClaudeCode will be used as fallback'
+      },
+      gemini: {
+        purpose: 'Google Gemini CLI (stages 01, 03, 04)',
+        install: 'See https://github.com/google/gemini-cli',
+        fallback: 'Gemini stages will use ClaudeCode as fallback'
+      },
+      codex: {
+        purpose: 'OpenAI Codex CLI (stages 07, 09)',
+        install: 'npm install -g @openai/codex',
+        fallback: 'Codex stages will use ClaudeCode as fallback'
+      }
+    }
+  };
+
+  let hasRequiredMissing = false;
+  let hasOptionalMissing = false;
+
+  // Check required dependencies
+  const missingRequired = [];
+  for (const [cmd, info] of Object.entries(dependencies.required)) {
+    if (!commandExists(cmd)) {
+      missingRequired.push({ cmd, ...info });
+      hasRequiredMissing = true;
+    }
+  }
+
+  // Check optional dependencies
+  const missingOptional = [];
+  for (const [cmd, info] of Object.entries(dependencies.optional)) {
+    if (!commandExists(cmd)) {
+      missingOptional.push({ cmd, ...info });
+      hasOptionalMissing = true;
+    }
+  }
+
+  // Display warnings
+  if (hasRequiredMissing || hasOptionalMissing) {
+    console.log('');
+    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+    log('⚠️  Dependency Check Results', 'yellow');
+    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+  }
+
+  if (hasRequiredMissing) {
+    console.log('');
+    log('❌ REQUIRED dependencies missing (core functionality affected):', 'red');
+    for (const dep of missingRequired) {
+      console.log(`   ${colors.red}•${colors.reset} ${dep.cmd} - ${dep.purpose}`);
+      console.log(`     Install: ${colors.cyan}${dep.install}${colors.reset}`);
+      console.log(`     ${colors.red}Impact: ${dep.impact}${colors.reset}`);
+    }
+  }
+
+  if (hasOptionalMissing) {
+    console.log('');
+    log('⚠️  Optional dependencies missing (fallback available):', 'yellow');
+    for (const dep of missingOptional) {
+      console.log(`   ${colors.yellow}•${colors.reset} ${dep.cmd} - ${dep.purpose}`);
+      console.log(`     Install: ${colors.cyan}${dep.install}${colors.reset}`);
+      console.log(`     ${colors.yellow}Fallback: ${dep.fallback}${colors.reset}`);
+    }
+  }
+
+  if (hasRequiredMissing || hasOptionalMissing) {
+    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+    console.log('');
+  }
+
+  // Return status for potential blocking
+  return {
+    hasRequiredMissing,
+    hasOptionalMissing,
+    missingRequired,
+    missingOptional
+  };
 }
 
 function displayAsciiBanner() {
@@ -439,6 +547,19 @@ ${colors.yellow}After creation:${colors.reset}
   log(`🎼 Creating claude-symphony project: ${actualProjectName}`, 'cyan');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'cyan');
   console.log('');
+
+  // Check system dependencies
+  const depCheck = checkDependencies();
+  if (depCheck.hasRequiredMissing && !skipPrompts) {
+    const continueAnyway = await confirm({
+      message: 'Required dependencies are missing. Continue anyway?',
+      default: false
+    });
+    if (!continueAnyway) {
+      log('Project creation cancelled. Please install required dependencies first.', 'yellow');
+      process.exit(1);
+    }
+  }
 
   // 1. Create target directory
   if (!fs.existsSync(targetDir)) {

@@ -77,7 +77,72 @@ update_progress() {
     return 0
 }
 
-# 4. Checkpoint creation reminder (required stages)
+# 4. Verify next stage prompts exist
+verify_next_stage_prompts() {
+    echo "Checking next stage requirements..."
+
+    # Get next stage
+    local stage_num=$(echo "$STAGE_ID" | cut -d'-' -f1)
+    local next_num=$(printf "%02d" $((10#$stage_num + 1)))
+
+    # Check if next stage exists
+    local next_stage=$(ls "$PROJECT_ROOT/stages/" 2>/dev/null | grep "^${next_num}-" | head -1)
+
+    if [ -z "$next_stage" ]; then
+        echo -e "  ${GREEN}✓${NC} Final stage - No next stage prompts needed"
+        return 0
+    fi
+
+    local next_config="$PROJECT_ROOT/stages/$next_stage/config.yaml"
+
+    if [ ! -f "$next_config" ]; then
+        echo -e "  ${GREEN}✓${NC} Next stage has no config.yaml"
+        return 0
+    fi
+
+    # Check if yq is available
+    if ! command -v yq &> /dev/null; then
+        echo -e "  ${YELLOW}⚠${NC} yq not installed - Skipping next stage prompt verification"
+        return 0
+    fi
+
+    # Check next stage's auto_invoke prompt_file
+    local prompt_file=$(yq '.auto_invoke.prompt_file // ""' "$next_config" 2>/dev/null)
+
+    if [ -n "$prompt_file" ] && [ "$prompt_file" != "null" ]; then
+        local full_path="$PROJECT_ROOT/stages/$next_stage/$prompt_file"
+
+        if [ ! -f "$full_path" ]; then
+            echo ""
+            echo -e "  ${YELLOW}⚠ Next Stage Prompt Missing${NC}"
+            echo ""
+            echo "    Next stage: $next_stage"
+            echo "    Required prompt: $prompt_file"
+            echo ""
+            echo "    This prompt should be generated as part of the current stage's outputs."
+            echo ""
+            echo "    Suggested action:"
+            echo "    1. Create the prompt file before running /next"
+            echo "    2. Or the next stage will need manual prompt creation"
+            echo ""
+
+            # Get prompt directory
+            local prompt_dir=$(dirname "$full_path")
+            if [ ! -d "$prompt_dir" ]; then
+                echo "    Note: Prompts directory does not exist: $prompt_dir"
+                echo "          Run: mkdir -p \"$prompt_dir\""
+            fi
+        else
+            echo -e "  ${GREEN}✓${NC} Next stage prompt exists: $next_stage/$prompt_file"
+        fi
+    else
+        echo -e "  ${GREEN}✓${NC} Next stage has no auto_invoke prompt requirement"
+    fi
+
+    return 0
+}
+
+# 5. Checkpoint creation reminder (required stages)
 remind_checkpoint() {
     local stage_num=$(echo "$STAGE_ID" | cut -d'-' -f1)
 
@@ -119,5 +184,6 @@ echo ""
 validate_completion
 check_handoff
 update_progress
+verify_next_stage_prompts
 remind_checkpoint
 show_next_stage

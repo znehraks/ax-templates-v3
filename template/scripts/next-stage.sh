@@ -63,7 +63,9 @@ handle_sprint_transition() {
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo -e "🔄 ${WHITE}Sprint Transition${NC}"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo -e "Sprint $CURRENT_SPRINT → Sprint $((CURRENT_SPRINT + 1))"
+        echo ""
+        echo -e "  Stage: ${CYAN}$CURRENT_STAGE${NC} (staying in same stage)"
+        echo -e "  Sprint: ${YELLOW}$CURRENT_SPRINT${NC} → ${GREEN}$((CURRENT_SPRINT + 1))${NC} of $TOTAL_SPRINTS"
         echo ""
 
         # Generate Sprint HANDOFF
@@ -75,9 +77,24 @@ handle_sprint_transition() {
         # Advance sprint
         advance_sprint "$CURRENT_SPRINT"
 
+        local REMAINING=$((TOTAL_SPRINTS - CURRENT_SPRINT - 1))
         echo ""
-        echo -e "${GREEN}✅${NC} Sprint $((CURRENT_SPRINT + 1)) started!"
-        echo "Remaining Sprints: $((TOTAL_SPRINTS - CURRENT_SPRINT - 1))"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo -e "${GREEN}✅ Sprint $((CURRENT_SPRINT + 1)) started!${NC}"
+        echo ""
+        echo "  Progress: Sprint $((CURRENT_SPRINT + 1)) / $TOTAL_SPRINTS"
+        if [ "$REMAINING" -gt 0 ]; then
+            echo "  Remaining: $REMAINING more sprint(s) after this"
+            echo ""
+            echo "  Next actions:"
+            echo "    /next         → Move to Sprint $((CURRENT_SPRINT + 2))"
+            echo "    /next --stage → Skip to next stage ($NEXT_STAGE)"
+        else
+            echo "  Status: This is the final sprint!"
+            echo ""
+            echo "  Next action:"
+            echo "    /next → Complete stage and move to $NEXT_STAGE"
+        fi
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
         return 0  # Sprint transition completed
@@ -206,6 +223,60 @@ fi
 NEXT_STAGE="${STAGE_IDS[$NEXT_IDX]}"
 CURRENT_STAGE_DIR="$STAGES_DIR/$CURRENT_STAGE"
 NEXT_STAGE_DIR="$STAGES_DIR/$NEXT_STAGE"
+
+# Show transition preview before executing
+show_transition_preview() {
+    local CONFIG_FILE="$PROJECT_ROOT/config/pipeline.yaml"
+    local SPRINT_ENABLED=false
+    local IS_SPRINT_STAGE=false
+    local CURRENT_SPRINT=1
+    local TOTAL_SPRINTS=1
+
+    # Check sprint mode status
+    if check_yq; then
+        SPRINT_ENABLED=$(yq '.sprint_mode.enabled // false' "$CONFIG_FILE" 2>/dev/null)
+        IS_SPRINT_STAGE=$(yq ".sprint_mode.stage_iterations[\"$CURRENT_STAGE\"].iterative // false" "$CONFIG_FILE" 2>/dev/null)
+    fi
+
+    if [ "$SPRINT_ENABLED" == "true" ] && [ "$IS_SPRINT_STAGE" == "true" ]; then
+        CURRENT_SPRINT=$(jq -r '.current_iteration.current_sprint // 1' "$PROGRESS_FILE")
+        TOTAL_SPRINTS=$(jq -r '.current_iteration.total_sprints // 3' "$PROGRESS_FILE")
+    fi
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo -e "📍 ${WHITE}Current Status${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  Stage: $CURRENT_STAGE"
+
+    if [ "$SPRINT_ENABLED" == "true" ] && [ "$IS_SPRINT_STAGE" == "true" ]; then
+        echo "  Sprint Mode: ${GREEN}ENABLED${NC}"
+        echo "  Current Sprint: $CURRENT_SPRINT / $TOTAL_SPRINTS"
+        echo ""
+
+        if [ "$CURRENT_SPRINT" -lt "$TOTAL_SPRINTS" ]; then
+            echo -e "  ${CYAN}→ /next${NC} will transition to: ${GREEN}Sprint $((CURRENT_SPRINT + 1))${NC}"
+            echo -e "  ${CYAN}→ /next --stage${NC} will transition to: ${GREEN}$NEXT_STAGE${NC} (skip remaining sprints)"
+        else
+            echo -e "  ${CYAN}→ /next${NC} will transition to: ${GREEN}$NEXT_STAGE${NC} (all sprints complete)"
+        fi
+    else
+        if [ "$SPRINT_ENABLED" == "true" ]; then
+            echo "  Sprint Mode: ${YELLOW}ENABLED${NC} (not applicable to this stage)"
+        else
+            echo "  Sprint Mode: ${GRAY}DISABLED${NC}"
+        fi
+        echo ""
+        echo -e "  ${CYAN}→ /next${NC} will transition to: ${GREEN}$NEXT_STAGE${NC}"
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+}
+
+# Show preview first
+show_transition_preview
 
 # Check for sprint transition (unless --stage flag is used)
 if [ "$STAGE_FORCE" = false ]; then

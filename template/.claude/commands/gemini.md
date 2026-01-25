@@ -24,6 +24,11 @@ Call Gemini CLI through tmux session.
 ## Execution Script
 
 ```bash
+scripts/ai-call.sh gemini "$ARGUMENTS"
+```
+
+Alternatively, direct wrapper call:
+```bash
 scripts/gemini-wrapper.sh "$ARGUMENTS"
 ```
 
@@ -74,9 +79,27 @@ To change:
 /gemini --timeout 600 [long task prompt]
 ```
 
+## Auto-Fallback
+
+If Gemini CLI is not available or fails, the system automatically falls back to ClaudeCode:
+
+| Exit Code | Reason | Action |
+|-----------|--------|--------|
+| 100 | CLI not installed | Auto-fallback to ClaudeCode |
+| 101 | API timeout | Auto-fallback to ClaudeCode |
+| 102 | API error | Auto-fallback to ClaudeCode |
+| 103 | Output capture failed | Auto-fallback to ClaudeCode |
+
+When fallback occurs, you will see:
+```
+ACTION_REQUIRED: CLAUDECODE_FALLBACK
+```
+
+ClaudeCode will then execute the same prompt directly.
+
 ## Limitations
-- Gemini CLI must be installed
-- tmux must be installed
+- Gemini CLI must be installed (or fallback will be used)
+- tmux must be installed for wrapper execution
 - Interactive prompts not supported (single queries only)
 
 ## Related
