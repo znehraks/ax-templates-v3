@@ -26,7 +26,6 @@ claude-symphony is a 10-stage software development workflow pipeline that orches
 - **Implementation Order**: Frontend-first or backend-first development approach with reference links
 - **Requirements Refinement**: 4-level breakdown system (Epic → Feature → Task → Subtask) with INVEST validation
 - **Moodboard UX**: Interactive design reference collection with Claude Vision/Figma MCP analysis
-- **Dual Distribution**: Both NPM CLI and Claude Code plugin available
 
 ### Pipeline Stages
 
@@ -132,82 +131,72 @@ my-saas-app
 3. [Feature 3]
 ```
 
-## Packages
-
-This monorepo contains three packages:
-
-| Package | Description | Install |
-|---------|-------------|---------|
-| [`claude-symphony`](./packages/cli) | NPM CLI | `npm install -g claude-symphony` |
-| [`@claude-symphony/core`](./packages/core) | Core library | `npm install @claude-symphony/core` |
-| [`@claude-symphony/plugin`](./packages/plugin) | Claude Code plugin | `claude plugin install @claude-symphony/plugin` |
-
 ## Commands
 
 ### Core Commands
 
-| Command | CLI | Plugin |
-|---------|-----|--------|
-| Initialize project | `symphony init` | `/init-project` |
-| Show status | `symphony status` | `/status` |
-| List stages | `symphony stages` | `/stages` |
-| Run stage | `symphony run-stage <id>` | `/run-stage <id>` |
-| Next stage | `symphony next` | `/next` |
-| Create handoff | `symphony handoff` | `/handoff` |
-| Create checkpoint | `symphony checkpoint` | `/checkpoint` |
-| Restore checkpoint | `symphony restore` | `/restore` |
-| Check context | `symphony context` | `/context` |
+| Command | Description |
+|---------|-------------|
+| `/status` | Check pipeline status |
+| `/stages` | List all stages |
+| `/run-stage <id>` | Run specific stage |
+| `/next` | Move to next stage |
+| `/handoff` | Create handoff document |
+| `/checkpoint` | Create checkpoint |
+| `/restore` | Restore checkpoint |
+| `/context` | Check context usage |
+| `/init-project` | Initialize project |
 
 ### AI Commands
 
-| Command | CLI | Plugin |
-|---------|-----|--------|
-| Gemini prompt | `symphony gemini <prompt>` | `/gemini <prompt>` |
-| Codex prompt | `symphony codex <prompt>` | `/codex <prompt>` |
+| Command | Description |
+|---------|-------------|
+| `/gemini <prompt>` | Send prompt to Gemini |
+| `/codex <prompt>` | Send prompt to Codex |
 
 ### Multi-AI Commands
 
-| Command | CLI | Plugin | Description |
-|---------|-----|--------|-------------|
-| AI Collaboration | `symphony collaborate` | `/collaborate` | Run multi-AI collaboration (parallel, sequential, debate modes) |
-| AI Benchmarking | `symphony benchmark` | `/benchmark` | Compare AI model performance on tasks |
-| Pipeline Fork | `symphony fork` | `/fork` | Create/manage pipeline branches for exploration |
-| Output Validation | `symphony validate` | `/validate` | Validate stage outputs against quality criteria |
+| Command | Description |
+|---------|-------------|
+| `/collaborate` | Run multi-AI collaboration (parallel, sequential, debate modes) |
+| `/benchmark` | Compare AI model performance on tasks |
+| `/fork` | Create/manage pipeline branches for exploration |
+| `/validate` | Validate stage outputs against quality criteria |
 
 ### Workflow Commands
 
-| Command | Plugin | Description |
-|---------|--------|-------------|
-| Epic Cycle | `/epic` | Manage epic cycles (new, set-scope, set-count, history) |
-| Implementation Order | `/config order` | Set development order (frontend/backend/parallel) |
-| Moodboard | `/moodboard` | Interactive design reference collection and analysis |
-| Requirements Refine | `/refine` | Break down requirements (Epic → Feature → Task → Subtask) |
+| Command | Description |
+|---------|-------------|
+| `/epic` | Manage epic cycles (new, set-scope, set-count, history) |
+| `/config order` | Set development order (frontend/backend/parallel) |
+| `/moodboard` | Interactive design reference collection and analysis |
+| `/refine` | Break down requirements (Epic → Feature → Task → Subtask) |
 
 ### Stage Shortcuts
 
-| Stage | CLI | Plugin |
-|-------|-----|--------|
-| 01-brainstorm | `symphony brainstorm` | `/brainstorm` |
-| 02-research | `symphony research` | `/research` |
-| 03-planning | `symphony planning` | `/planning` |
-| 04-ui-ux | `symphony ui-ux` | `/ui-ux` |
-| 05-task-management | `symphony tasks` | `/tasks` |
-| 06-implementation | `symphony implement` | `/implement` |
-| 07-refactoring | `symphony refactor` | `/refactor` |
-| 08-qa | `symphony qa` | `/qa` |
-| 09-testing | `symphony test` | `/test` |
-| 10-deployment | `symphony deploy` | `/deploy` |
+| Stage | Command |
+|-------|---------|
+| 01-brainstorm | `/brainstorm` |
+| 02-research | `/research` |
+| 03-planning | `/planning` |
+| 04-ui-ux | `/ui-ux` |
+| 05-task-management | `/tasks` |
+| 06-implementation | `/implement` |
+| 07-refactoring | `/refactor` |
+| 08-qa | `/qa` |
+| 09-testing | `/test` |
+| 10-deployment | `/deploy` |
 
 ## Configuration
 
-Project configuration is stored in `.symphony-config.yaml`:
+Project configuration is stored in `config/pipeline.yaml` and other YAML files:
 
 ```yaml
 claude_symphony:
   version: "2.0.0"
 
 paths:
-  project_root: "./my-app"
+  project_root: "."
   stages_output: "./stages"
   state: "./state"
   checkpoints: "./state/checkpoints"
@@ -234,19 +223,25 @@ git:
 
 ## Project Structure
 
-Each project is fully self-contained with all pipeline components:
+Each project created with `npx claude-symphony` is fully self-contained:
 
 ```
 my-project/                        # PROJECT_ROOT
 ├── .claude/                       # Claude Code configuration
-│   ├── commands/                  # Slash commands (30+ commands)
+│   ├── commands/                  # Slash commands (29 commands)
 │   │   ├── epic.md                # /epic - Epic cycle management
 │   │   ├── moodboard.md           # /moodboard - Design collection
 │   │   ├── refine.md              # /refine - Requirements refinement
 │   │   ├── config.md              # /config - Implementation order
+│   │   ├── status.md              # /status - Pipeline status
+│   │   ├── collaborate.md         # /collaborate - Multi-AI collaboration
 │   │   └── ...
-│   ├── hooks/                     # Lifecycle hooks
-│   ├── skills/                    # AI skills
+│   ├── hooks/                     # Lifecycle hooks (8 hooks)
+│   │   ├── pre-stage.sh
+│   │   ├── post-stage.sh
+│   │   ├── auto-checkpoint.sh
+│   │   └── ...
+│   ├── skills/                    # AI skills (7 skills)
 │   └── settings.json
 ├── stages/                        # 10-stage pipeline
 │   ├── 01-brainstorm/
@@ -259,26 +254,29 @@ my-project/                        # PROJECT_ROOT
 │   │   └── HANDOFF.md
 │   ├── 02-research/
 │   └── ... (10 stages total)
-├── config/                        # Pipeline configuration
+├── config/                        # Pipeline configuration (24 files)
 │   ├── pipeline.yaml              # Core pipeline settings
 │   ├── context.yaml               # Context management
 │   ├── epic_cycles.yaml           # Epic cycle configuration
 │   ├── implementation_order.yaml  # Dev order settings
 │   ├── requirements_refinement.yaml # Refinement rules
 │   ├── ui-ux.yaml                 # Moodboard & design settings
-│   └── ... (20+ config files)
+│   ├── ai_collaboration.yaml      # Multi-AI collaboration
+│   ├── models.yaml                # AI model configuration
+│   └── ...
 ├── state/                         # Project state
 │   ├── progress.json              # Pipeline progress
 │   ├── checkpoints/               # Recovery points
 │   └── context/                   # Context snapshots
-├── scripts/                       # Helper scripts
+├── scripts/                       # Helper scripts (25 scripts)
+│   ├── common.sh                  # Shared utilities
 │   ├── epic-cycle.sh              # Epic cycle management
 │   ├── moodboard-manager.sh       # Moodboard collection
 │   ├── requirements-refine.sh     # Requirements refinement
+│   ├── ai-benchmark.sh            # AI benchmarking
 │   └── ...
 ├── CLAUDE.md                      # Main AI instructions
-├── src/                           # Source code (from stage 06)
-└── package.json
+└── src/                           # Source code (from stage 06)
 ```
 
 ## Design Patterns
@@ -295,18 +293,11 @@ my-project/                        # PROJECT_ROOT
 10. **Iterative Refinement Loops** - Epic cycles, requirements refinement, and moodboard feedback
 11. **Hierarchical Decomposition** - 4-level requirement breakdown (Epic → Feature → Task → Subtask)
 
-## Documentation
-
-- [CLI Reference](./packages/cli/README.md)
-- [Plugin Reference](./packages/plugin/README.md)
-- [Migration Guide](./docs/migration-guide.md)
-
 ## Development
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
+- Node.js >= 20.12.0
 - tmux (for AI sessions)
 
 ### Setup
@@ -317,63 +308,31 @@ git clone https://github.com/znehraks/claude-symphony.git
 cd claude-symphony
 
 # Install dependencies
-pnpm install
+npm install
 
-# Build all packages
-pnpm build
-
-# Run tests
-pnpm test
+# Test locally
+node bin/create.js test-project
 ```
 
-### Local Development
-
-```bash
-# Link CLI globally
-cd packages/cli
-pnpm link --global
-
-# Test CLI
-symphony --help
-
-# Link plugin to Claude Code
-claude plugin link ./packages/plugin
-```
-
-### Monorepo Structure
+### Repository Structure
 
 ```
 claude-symphony/
-├── packages/
-│   ├── core/              # Shared business logic
-│   │   ├── src/
-│   │   │   ├── config/    # Configuration management
-│   │   │   ├── stage/     # Stage management
-│   │   │   ├── context/   # Context management
-│   │   │   └── ai/        # AI model abstraction
-│   │   └── package.json
-│   │
-│   ├── cli/               # NPM CLI package
-│   │   ├── src/
-│   │   │   ├── commands/  # CLI commands
-│   │   │   └── prompts/   # Interactive prompts
-│   │   ├── bin/ax.js
-│   │   └── package.json
-│   │
-│   └── plugin/            # Claude Code plugin
-│       ├── plugin.json
-│       ├── CLAUDE.md
-│       ├── .claude/
-│       │   ├── commands/  # Slash commands
-│       │   └── hooks/     # Lifecycle hooks
-│       ├── scripts/       # Helper scripts
-│       └── package.json
-│
-├── templates/             # Installable templates
-│   └── default/           # Default 10-stage template
-│
-├── docs/                  # Documentation
-└── package.json           # Monorepo root
+├── bin/
+│   └── create.js           # npx entry point
+├── template/               # Project template
+│   ├── .claude/            # Claude Code config
+│   │   ├── commands/       # Slash commands
+│   │   ├── hooks/          # Lifecycle hooks
+│   │   └── skills/         # AI skills
+│   ├── stages/             # 10-stage pipeline
+│   ├── config/             # Configuration files
+│   ├── scripts/            # Helper scripts
+│   ├── state/              # State management
+│   └── CLAUDE.md
+├── assets/                 # Images and assets
+├── package.json
+└── README.md
 ```
 
 ## Contributing
