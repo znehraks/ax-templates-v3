@@ -86,8 +86,18 @@ signal_relay_ready() {
     return 0
 }
 
-# Export function so it's available in Claude session
+# Build claude command with optional bypass flag
+get_claude_cmd() {
+    if [[ "${CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS:-}" == "1" ]]; then
+        echo "claude --dangerously-skip-permissions"
+    else
+        echo "claude"
+    fi
+}
+
+# Export functions so they're available in Claude session
 export -f signal_relay_ready
+export -f get_claude_cmd
 export FIFO_PATH
 export RELAY_BASE
 export LOG_FILE
@@ -99,11 +109,10 @@ HANDOFF_FILE="${1:-}"
 show_relay_banner() {
     echo ""
     echo -e "${CYAN}+============================================================+${NC}"
-    echo -e "${CYAN}|${NC}         ${GREEN}Claude Symphony - Memory Relay Active${NC}            ${CYAN}|${NC}"
+    echo -e "${CYAN}|${NC}           ${GREEN}Claude Symphony - Encore Mode${NC}                  ${CYAN}|${NC}"
     echo -e "${CYAN}+============================================================+${NC}"
-    echo -e "${CYAN}|${NC}  Auto-handoff enabled at 50% context                     ${CYAN}|${NC}"
-    echo -e "${CYAN}|${NC}  Run: signal_relay_ready \$PWD/HANDOFF.md                ${CYAN}|${NC}"
-    echo -e "${CYAN}|${NC}  Or Claude will auto-trigger when context is low        ${CYAN}|${NC}"
+    echo -e "${CYAN}|${NC}  Automatic session handoff at 50% context               ${CYAN}|${NC}"
+    echo -e "${CYAN}|${NC}  Claude never stops - your workflow continues forever   ${CYAN}|${NC}"
     echo -e "${CYAN}+============================================================+${NC}"
     echo ""
 }
@@ -127,11 +136,11 @@ if [[ -n "${HANDOFF_FILE}" ]] && [[ -f "${HANDOFF_FILE}" ]]; then
     show_relay_banner
 
     # Start Claude with instruction to read handoff
-    exec claude --resume "${HANDOFF_FILE}" 2>/dev/null || exec claude
+    exec $(get_claude_cmd) --resume "${HANDOFF_FILE}" 2>/dev/null || exec $(get_claude_cmd)
 else
     log_relay "Starting fresh Claude session with relay support"
     show_relay_banner
 
     # Start Claude normally
-    exec claude
+    exec $(get_claude_cmd)
 fi

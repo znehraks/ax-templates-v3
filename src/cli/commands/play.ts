@@ -17,6 +17,7 @@ const RELAY_DIR = path.join(os.homedir(), '.claude/memory-relay');
 
 export interface PlayOptions {
   directory?: string;
+  dangerouslySkipPermissions?: boolean;
 }
 
 export interface PlayLogsOptions {
@@ -24,11 +25,19 @@ export interface PlayLogsOptions {
 }
 
 /**
- * Get package root directory
+ * Get package root directory by finding package.json
+ * More robust than relative paths - works regardless of build structure
  */
 function getPackageRoot(): string {
-  // From dist/cli/commands/play.js, go up 3 levels to package root
-  return path.resolve(__dirname, '../../..');
+  let dir = __dirname;
+  while (dir !== path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) {
+      return dir;
+    }
+    dir = path.dirname(dir);
+  }
+  // Fallback to relative path if package.json not found
+  return path.resolve(__dirname, '../..');
 }
 
 /**
@@ -108,10 +117,20 @@ export async function playCommand(options: PlayOptions): Promise<void> {
   const workDir = options.directory || process.cwd();
   const startupScript = path.join(RELAY_DIR, 'orchestrator/tmux-startup.sh');
 
-  logInfo('Starting Memory Relay session...');
+  logInfo('Starting Encore Mode session...');
+
+  // Set environment variable for bypass mode
+  const env = options.dangerouslySkipPermissions
+    ? { ...process.env, CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS: '1' }
+    : process.env;
+
+  if (options.dangerouslySkipPermissions) {
+    logWarning('Bypass mode enabled - Claude will skip all permission prompts');
+  }
 
   const result = await execShell(`"${startupScript}" "${workDir}"`, {
     stdio: 'inherit',
+    env,
   });
 
   process.exit(result.exitCode);

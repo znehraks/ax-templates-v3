@@ -198,9 +198,10 @@ program
 // play command
 program
   .command('play')
-  .description('Start Claude with Memory Relay orchestration (auto-installs if needed)')
+  .description('Start Claude with Encore Mode (automatic session handoff)')
   .option('-d, --directory <dir>', 'Working directory', process.cwd())
-  .action(async (options: { directory: string }) => {
+  .option('--dangerously-skip-permissions', 'Start Claude in bypass mode (skip all permission prompts)')
+  .action(async (options: { directory: string; dangerouslySkipPermissions?: boolean }) => {
     await playCommand(options);
   });
 
