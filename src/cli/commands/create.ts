@@ -1043,4 +1043,9 @@ export async function createProject(
     console.log(chalk.gray('  → ') + chalk.cyan('claude-symphony play'));
   }
   console.log('');
+
+  // Bypass mode hint
+  log('Tip:', 'blue');
+  console.log(chalk.gray('  Use ') + chalk.cyan('claude-symphony play --auto') + chalk.gray(' to skip all permission prompts (bypass mode)'));
+  console.log('');
 }
