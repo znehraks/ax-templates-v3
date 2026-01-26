@@ -201,7 +201,11 @@ program
   .description('Start Claude with Encore Mode (automatic session handoff)')
   .option('-d, --directory <dir>', 'Working directory', process.cwd())
   .option('--dangerously-skip-permissions, --auto', 'Start Claude in bypass mode (skip all permission prompts)')
-  .action(async (options: { directory: string; dangerouslySkipPermissions?: boolean }) => {
+  .action(async (options: { directory: string; dangerouslySkipPermissions?: boolean; auto?: boolean }) => {
+    // Commander sets 'auto' when --auto is used, normalize to dangerouslySkipPermissions
+    if (options.auto) {
+      options.dangerouslySkipPermissions = true;
+    }
     await playCommand(options);
   });
 
