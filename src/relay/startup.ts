@@ -88,40 +88,45 @@ export function createTmuxSession(options: SessionOptions): boolean {
     // Rename the window
     execSync(`tmux rename-window -t "${sessionName}:0" "symphony"`, { stdio: 'pipe' });
 
-    // Split the window: left for Claude (main), right for orchestrator
-    // Split with 80% for Claude, 20% for orchestrator
+    // Split 50/50 - orchestrator on left, Claude on right
+    // -b flag creates new pane to the LEFT of current pane
+    // -p 50 for 50% split
     execSync(
-      `tmux split-window -h -t "${sessionName}:0" -l 40 -c "${options.workDir}"`,
+      `tmux split-window -h -b -t "${sessionName}:0" -p 50 -c "${options.workDir}"`,
       { stdio: 'pipe' }
     );
 
-    // Pane 0: Claude (main workspace)
-    // Pane 1: Orchestrator (monitoring)
+    // After -b split:
+    // Pane 0: New pane (left) - Orchestrator
+    // Pane 1: Original pane (right) - Claude
 
-    // Start orchestrator in pane 1 (right side)
-    // Use the TypeScript orchestrator via node
-    // Use single quotes to avoid nested quote issues with paths containing spaces
+    // Start orchestrator in pane 0 (left side)
     const orchestratorCmd = buildOrchestratorCommand();
-    execSync(`tmux send-keys -t "${sessionName}:0.1" '${orchestratorCmd}' Enter`, { stdio: 'pipe' });
+    execSync(`tmux send-keys -t "${sessionName}:0.0" '${orchestratorCmd}' Enter`, { stdio: 'pipe' });
 
     // Wait for orchestrator to initialize
     execSync('sleep 1', { stdio: 'pipe' });
 
-    // Start Claude wrapper in pane 0 (left side, main)
-    // Use single quotes to properly pass --bypass flag without quote escaping issues
+    // Start Claude wrapper in pane 1 (right side)
     const wrapperCmd = buildWrapperCommand(options);
-    execSync(`tmux send-keys -t "${sessionName}:0.0" '${wrapperCmd}' Enter`, { stdio: 'pipe' });
+    execSync(`tmux send-keys -t "${sessionName}:0.1" '${wrapperCmd}' Enter`, { stdio: 'pipe' });
 
-    // Select the Claude pane as active
-    execSync(`tmux select-pane -t "${sessionName}:0.0"`, { stdio: 'pipe' });
+    // Select the Claude pane as active (right side)
+    execSync(`tmux select-pane -t "${sessionName}:0.1"`, { stdio: 'pipe' });
 
     // Set up pane titles for clarity
-    execSync(`tmux select-pane -t "${sessionName}:0.0" -T "Claude"`, { stdio: 'pipe' });
-    execSync(`tmux select-pane -t "${sessionName}:0.1" -T "Orchestrator"`, { stdio: 'pipe' });
+    execSync(`tmux select-pane -t "${sessionName}:0.0" -T "Orchestrator"`, { stdio: 'pipe' });
+    execSync(`tmux select-pane -t "${sessionName}:0.1" -T "Claude"`, { stdio: 'pipe' });
 
     // Enable pane titles display
     execSync(`tmux set-option -t "${sessionName}" pane-border-status top`, { stdio: 'pipe' });
     execSync(`tmux set-option -t "${sessionName}" pane-border-format " #{pane_title} "`, { stdio: 'pipe' });
+
+    // When orchestrator pane (pane 0) exits, kill the entire session
+    execSync(
+      `tmux set-hook -t "${sessionName}" pane-exited 'if -F "#{==:#{pane_index},0}" "kill-session"'`,
+      { stdio: 'pipe' }
+    );
 
     return true;
   } catch (error) {
@@ -177,12 +182,12 @@ function buildWrapperCommand(options: SessionOptions): string {
 function showSessionLayout(): void {
   console.log('');
   console.log('Layout:');
-  console.log('+------------------------+--------------+');
-  console.log('|                        |              |');
-  console.log('|      Claude (80%)      | Orchestrator |');
-  console.log('|                        |    (20%)     |');
-  console.log('|                        |              |');
-  console.log('+------------------------+--------------+');
+  console.log('+--------------+------------------------+');
+  console.log('|              |                        |');
+  console.log('| Orchestrator |      Claude (50%)      |');
+  console.log('|    (50%)     |                        |');
+  console.log('|              |                        |');
+  console.log('+--------------+------------------------+');
   console.log('');
 }
 
