@@ -1,0 +1,46 @@
+{
+  "$schema": "memory-relay-config-schema",
+  "version": "1.0.0",
+
+  "threshold": {
+    "trigger_percentage": 50,
+    "warning_percentage": 60,
+    "cooldown_seconds": 300
+  },
+
+  "behavior": {
+    "auto_relay": true,
+    "create_new_worktree": false,
+    "archive_handoffs": true,
+    "notify_desktop": true
+  },
+
+  "paths": {
+    "handoff_dir": "~/.claude/memory-relay/handoffs",
+    "queue_dir": "~/.claude/memory-relay/queue",
+    "state_file": "~/.claude/memory-relay/.state",
+    "logs_dir": "~/.claude/memory-relay/logs"
+  },
+
+  "orchestrator": {
+    "enabled": true,
+    "tmux_session_name": "symphony-session",
+    "fifo_path": "~/.claude/memory-relay/orchestrator/signals/relay.fifo",
+    "pid_file": "~/.claude/memory-relay/orchestrator/orchestrator.pid",
+    "ack_timeout_seconds": 30,
+    "new_session_wait_seconds": 2,
+    "layout": {
+      "claude_pane_width": 80,
+      "orchestrator_pane_width": 20
+    }
+  },
+
+  "handoff_template": {
+    "include_original_request": true,
+    "include_completed_work": true,
+    "include_remaining_tasks": true,
+    "include_key_decisions": true,
+    "include_must_not_do": true,
+    "include_file_changes": true
+  }
+}
