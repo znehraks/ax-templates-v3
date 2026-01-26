@@ -29,20 +29,22 @@ claude-symphony-play
 +------------------------------------------------------------+
 |                tmux session: symphony-session               |
 +----------------------------+-------------------------------+
-|      Claude Session (80%)  |     Orchestrator (20%)        |
-|      ------------------    |     -----------------         |
+|     Orchestrator (50%)     |      Claude Session (50%)     |
+|     -----------------      |      ------------------       |
 |                            |                               |
-|   1. Work normally         |   Listening on FIFO...        |
-|   2. Context reaches 50%   |                               |
-|   3. Generate HANDOFF.md   |                               |
-|   4. signal_relay_ready    | <-- Receives signal           |
-|                            |     Creates new pane          |
-|   <-- ACK received <------ |     Starts new Claude         |
-|   5. Safe to exit          |                               |
-|                            |   [New Claude Session]        |
-|                            |   Reads HANDOFF.md            |
-|                            |   Continues work...           |
+|   Listening on FIFO...     |   1. Work normally            |
+|                            |   2. Context reaches 50%      |
+|                            |   3. Generate HANDOFF.md      |
+|   Receives signal -->      |   4. signal_relay_ready       |
+|   Creates new pane         |                               |
+|   Starts new Claude        |   <-- ACK received            |
+|                            |   5. Safe to exit             |
+|   [New Claude Session]     |                               |
+|   Reads HANDOFF.md         |                               |
+|   Continues work...        |                               |
 +----------------------------+-------------------------------+
+
+Note: When orchestrator pane exits, the entire session terminates.
 ```
 
 ### Signal Flow

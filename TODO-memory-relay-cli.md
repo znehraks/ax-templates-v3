@@ -1,59 +1,59 @@
 # Memory Relay CLI 통합 TODO
 
+> **Status: ✅ COMPLETED** - 2024년 구현 완료
+
 ## 목표
 
 `claude-symphony play` 명령어로 Memory Relay를 **자동 설치 + 실행**
 
-## 현재 문제
+## 현재 상태
 
 ```bash
-# 현재 (2단계 - 번거로움)
-./scripts/memory-relay/install.sh  # 1. 수동 설치
-claude-symphony-play               # 2. 실행
-
-# 원하는 결과 (1단계)
+# 구현 완료!
 claude-symphony play               # 자동 설치 + 실행
+claude-symphony play --auto        # bypass 모드 (권한 자동 승인)
+claude-symphony play:status        # 상태 확인
+claude-symphony play:logs -f       # 로그 확인
+claude-symphony play:stop          # 종료
 ```
 
 ---
 
 ## TODO 체크리스트
 
-### Phase 1: play.ts 생성
+### Phase 1: play.ts 생성 ✅
 
-- [ ] `src/cli/commands/play.ts` 파일 생성
-- [ ] `playCommand()` 함수 구현
-  - [ ] tmux 의존성 확인
-  - [ ] `~/.claude/memory-relay` 존재 확인
-  - [ ] 없으면 `installMemoryRelay()` 호출
-  - [ ] tmux-startup.sh 실행
-- [ ] `installMemoryRelay()` 함수 구현
-  - [ ] 패키지 내 `scripts/memory-relay` 찾기
-  - [ ] `~/.claude/memory-relay`로 복사
-  - [ ] 실행 권한 설정 (chmod +x)
-  - [ ] 필요 디렉토리 생성 (logs, signals, handoffs)
-- [ ] `playStatus()` 함수 구현
-- [ ] `playLogs()` 함수 구현
-- [ ] `playStop()` 함수 구현
+- [x] `src/relay/startup.ts` 파일 생성 (TypeScript로 재구현)
+- [x] `startSession()` 함수 구현
+  - [x] tmux 의존성 확인
+  - [x] `~/.claude/memory-relay` 존재 확인
+  - [x] 없으면 자동 설치
+  - [x] tmux 세션 생성
+- [x] `createTmuxSession()` 함수 구현
+  - [x] 50/50 레이아웃 (Orchestrator 왼쪽, Claude 오른쪽)
+  - [x] Orchestrator 종료 시 세션 전체 종료
+- [x] `playStatus()` 함수 구현
+- [x] `playLogs()` 함수 구현
+- [x] `playStop()` 함수 구현
 
-### Phase 2: CLI 등록
+### Phase 2: CLI 등록 ✅
 
-- [ ] `src/cli/index.ts`에 import 추가
-- [ ] `play` 명령어 등록
-- [ ] `play:status` 명령어 등록
-- [ ] `play:logs` 명령어 등록
-- [ ] `play:stop` 명령어 등록
+- [x] `src/cli/index.ts`에 import 추가
+- [x] `play` 명령어 등록
+- [x] `play:status` 명령어 등록
+- [x] `play:logs` 명령어 등록
+- [x] `play:stop` 명령어 등록
 
-### Phase 3: Package 설정
+### Phase 3: Package 설정 ✅
 
-- [ ] `package.json`의 `files` 배열에 `"scripts/"` 추가
+- [x] `package.json`의 `files` 배열에 `"scripts/"` 추가
 
-### Phase 4: 테스트
+### Phase 4: 테스트 ✅
 
-- [ ] `npm run build` 성공 확인
-- [ ] `~/.claude/memory-relay` 삭제 후 테스트
-- [ ] `claude-symphony play` 실행 시 자동 설치 확인
-- [ ] tmux 세션 정상 시작 확인
+- [x] `npm run build` 성공 확인
+- [x] `~/.claude/memory-relay` 삭제 후 테스트
+- [x] `claude-symphony play` 실행 시 자동 설치 확인
+- [x] tmux 세션 정상 시작 확인
 
 ---
 

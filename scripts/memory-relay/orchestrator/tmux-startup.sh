@@ -112,42 +112,47 @@ tmux new-session -d -s "${SESSION_NAME}" -c "${WORK_DIR}" -x 200 -y 50
 # Rename the window
 tmux rename-window -t "${SESSION_NAME}:0" "symphony"
 
-# Split the window: left for Claude (main), right for orchestrator
-# Split with 80% for Claude, 20% for orchestrator
-tmux split-window -h -t "${SESSION_NAME}:0" -l 40 -c "${WORK_DIR}"
+# Split 50/50 - orchestrator on left, Claude on right
+# -b flag creates new pane to the LEFT of current pane
+# -p 50 for 50% split
+tmux split-window -h -b -t "${SESSION_NAME}:0" -p 50 -c "${WORK_DIR}"
 
-# Pane 0: Claude (main workspace)
-# Pane 1: Orchestrator (monitoring)
+# After -b split:
+# Pane 0: New pane (left) - Orchestrator
+# Pane 1: Original pane (right) - Claude
 
-# Start orchestrator in pane 1 (right side)
-tmux send-keys -t "${SESSION_NAME}:0.1" "${ORCHESTRATOR_SCRIPT} start" Enter
+# Start orchestrator in pane 0 (left side)
+tmux send-keys -t "${SESSION_NAME}:0.0" "${ORCHESTRATOR_SCRIPT} start" Enter
 
 # Wait for orchestrator to initialize
 sleep 1
 
-# Start Claude wrapper in pane 0 (left side, main), pass bypass flag if set
-tmux send-keys -t "${SESSION_NAME}:0.0" "${WRAPPER_SCRIPT} ${BYPASS_MODE}" Enter
+# Start Claude wrapper in pane 1 (right side), pass bypass flag if set
+tmux send-keys -t "${SESSION_NAME}:0.1" "${WRAPPER_SCRIPT} ${BYPASS_MODE}" Enter
 
-# Select the Claude pane as active
-tmux select-pane -t "${SESSION_NAME}:0.0"
+# Select the Claude pane as active (right side)
+tmux select-pane -t "${SESSION_NAME}:0.1"
 
 # Set up pane titles for clarity
-tmux select-pane -t "${SESSION_NAME}:0.0" -T "Claude"
-tmux select-pane -t "${SESSION_NAME}:0.1" -T "Orchestrator"
+tmux select-pane -t "${SESSION_NAME}:0.0" -T "Orchestrator"
+tmux select-pane -t "${SESSION_NAME}:0.1" -T "Claude"
 
 # Enable pane titles display
 tmux set-option -t "${SESSION_NAME}" pane-border-status top
 tmux set-option -t "${SESSION_NAME}" pane-border-format " #{pane_title} "
 
+# When orchestrator pane (pane 0) exits, kill the entire session
+tmux set-hook -t "${SESSION_NAME}" pane-exited 'if -F "#{==:#{pane_index},0}" "kill-session"'
+
 echo -e "${GREEN}Session created successfully!${NC}"
 echo ""
 echo "Layout:"
-echo "+------------------------+--------------+"
-echo "|                        |              |"
-echo "|      Claude (80%)      | Orchestrator |"
-echo "|                        |    (20%)     |"
-echo "|                        |              |"
-echo "+------------------------+--------------+"
+echo "+--------------+------------------------+"
+echo "|              |                        |"
+echo "| Orchestrator |      Claude (50%)      |"
+echo "|    (50%)     |                        |"
+echo "|              |                        |"
+echo "+--------------+------------------------+"
 echo ""
 echo -e "Attaching to session ${GREEN}${SESSION_NAME}${NC}..."
 

@@ -131,7 +131,56 @@ my-saas-app
 3. [Feature 3]
 ```
 
+## Encore Mode (Memory Relay)
+
+Start Claude with automatic session handoff when context reaches 50%:
+
+```bash
+# Start Encore Mode session
+claude-symphony play
+
+# With bypass mode (auto-approve permissions)
+claude-symphony play --auto
+
+# Check status
+claude-symphony play:status
+
+# View logs
+claude-symphony play:logs -f
+
+# Stop orchestrator
+claude-symphony play:stop
+```
+
+### Session Layout
+
+```
++--------------+------------------------+
+|              |                        |
+| Orchestrator |      Claude (50%)      |
+|    (50%)     |                        |
+|              |                        |
++--------------+------------------------+
+```
+
+- **Orchestrator** (left): Monitors context and handles session handoffs
+- **Claude** (right): Main workspace for development
+- When orchestrator pane exits, the entire session terminates
+
 ## Commands
+
+### CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `claude-symphony init` | Initialize a new project |
+| `claude-symphony play` | Start Encore Mode session |
+| `claude-symphony play --auto` | Start with bypass mode |
+| `claude-symphony play:status` | Show orchestrator status |
+| `claude-symphony play:logs` | View relay logs |
+| `claude-symphony play:stop` | Stop orchestrator |
+| `claude-symphony status` | Show pipeline status |
+| `claude-symphony stages` | List all stages |
 
 ### Core Commands
 
