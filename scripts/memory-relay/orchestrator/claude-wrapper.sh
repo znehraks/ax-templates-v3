@@ -88,7 +88,13 @@ signal_relay_ready() {
 
 # Build claude command with optional bypass flag
 get_claude_cmd() {
-    if [[ "${CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS:-}" == "1" ]]; then
+    # Check both shell env and tmux env for bypass flag
+    local bypass="${CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS:-}"
+    if [[ -z "${bypass}" ]] && command -v tmux &> /dev/null && [[ -n "${TMUX:-}" ]]; then
+        bypass=$(tmux show-environment CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS 2>/dev/null | cut -d= -f2 || echo "")
+    fi
+
+    if [[ "${bypass}" == "1" ]]; then
         echo "claude --dangerously-skip-permissions"
     else
         echo "claude"

@@ -25,11 +25,11 @@ program
 
 // init command: create project
 program
-  .command('init [project-name]')
+  .command('init')
   .description('Initialize a new claude-symphony project')
   .option('-y, --yes', 'Skip prompts and use defaults')
-  .action(async (projectName: string = '.', options: { yes?: boolean }) => {
-    await createProject(projectName, { skipPrompts: options.yes ?? false });
+  .action(async (options: { yes?: boolean }) => {
+    await createProject({ skipPrompts: options.yes ?? false });
   });
 
 // run-stage command
@@ -200,7 +200,7 @@ program
   .command('play')
   .description('Start Claude with Encore Mode (automatic session handoff)')
   .option('-d, --directory <dir>', 'Working directory', process.cwd())
-  .option('--dangerously-skip-permissions', 'Start Claude in bypass mode (skip all permission prompts)')
+  .option('--dangerously-skip-permissions, --auto', 'Start Claude in bypass mode (skip all permission prompts)')
   .action(async (options: { directory: string; dangerouslySkipPermissions?: boolean }) => {
     await playCommand(options);
   });

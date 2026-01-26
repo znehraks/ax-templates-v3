@@ -99,6 +99,11 @@ echo ""
 # Create new tmux session with orchestrator in the first pane (background)
 tmux new-session -d -s "${SESSION_NAME}" -c "${WORK_DIR}" -x 200 -y 50
 
+# Pass bypass mode environment variable to tmux session
+if [[ "${CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS:-}" == "1" ]]; then
+    tmux set-environment -t "${SESSION_NAME}" CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS "1"
+fi
+
 # Rename the window
 tmux rename-window -t "${SESSION_NAME}:0" "symphony"
 

@@ -887,15 +887,23 @@ function removeNestedGitDirs(dir: string, isRoot = true): void {
  * Main project creation function
  */
 export async function createProject(
-  projectName: string,
   options: CreateOptions
 ): Promise<void> {
   const { skipPrompts } = options;
 
-  // Project name validation
-  if (projectName !== '.' && !/^[a-z0-9-]+$/.test(projectName)) {
-    log('Error: Project name must contain only lowercase letters, numbers, and hyphens.', 'red');
-    process.exit(1);
+  // Interactive project name prompt (unless skipPrompts)
+  let projectName = '.';
+  if (!skipPrompts) {
+    projectName = await input({
+      message: 'Project name (or . for current directory):',
+      default: '.',
+      validate: (value) => {
+        if (value !== '.' && !/^[a-z0-9-]+$/.test(value)) {
+          return 'Project name must contain only lowercase letters, numbers, and hyphens';
+        }
+        return true;
+      },
+    });
   }
 
   // Find template directory (relative to the package root)
@@ -1025,45 +1033,14 @@ export async function createProject(
   log(`✓ Project '${actualProjectName}' created successfully!`, 'green');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'green');
   console.log('');
-  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
-  log('🚀 Next steps:', 'yellow');
-  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
-  console.log('');
+
+  // Next steps
+  log('Next steps:', 'yellow');
   if (projectName !== '.') {
-    console.log(chalk.white('  1. ') + chalk.cyan(`cd ${projectName}`));
-    console.log(chalk.white('  2. ') + chalk.cyan('claude') + chalk.gray('                      ← Start Claude Code'));
-    console.log(chalk.white('  3. ') + chalk.gray('Install plugin (in Claude Code):'));
-    log('     /plugin marketplace add jarrodwatts/claude-hud', 'cyan');
-    log('     /plugin install claude-hud', 'cyan');
-    console.log(chalk.white('  4. ') + chalk.gray('Edit ') + chalk.cyan('stages/01-brainstorm/inputs/project_brief.md'));
-    console.log(chalk.white('  5. ') + chalk.gray('Run ') + chalk.cyan('/run-stage 01-brainstorm'));
+    console.log(chalk.gray('  1. ') + chalk.cyan(`cd ${projectName}`));
+    console.log(chalk.gray('  2. ') + chalk.cyan('claude-symphony play'));
   } else {
-    console.log(chalk.white('  1. ') + chalk.cyan('claude') + chalk.gray('                      ← Start Claude Code'));
-    console.log(chalk.white('  2. ') + chalk.gray('Install plugin (in Claude Code):'));
-    log('     /plugin marketplace add jarrodwatts/claude-hud', 'cyan');
-    log('     /plugin install claude-hud', 'cyan');
-    console.log(chalk.white('  3. ') + chalk.gray('Edit ') + chalk.cyan('stages/01-brainstorm/inputs/project_brief.md'));
-    console.log(chalk.white('  4. ') + chalk.gray('Run ') + chalk.cyan('/run-stage 01-brainstorm'));
+    console.log(chalk.gray('  → ') + chalk.cyan('claude-symphony play'));
   }
-  console.log('');
-  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'magenta');
-  log('🎭 Recommended: Encore Mode', 'magenta');
-  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'magenta');
-  console.log('');
-  if (projectName !== '.') {
-    log(`  cd ${projectName} && claude-symphony play`, 'cyan');
-  } else {
-    log('  claude-symphony play', 'cyan');
-  }
-  console.log('');
-  log('  Claude never stops - automatic session handoff', 'gray');
-  log('  keeps your workflow going indefinitely.', 'gray');
-  console.log('');
-  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'cyan');
-  log('📋 Pipeline stages:', 'cyan');
-  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'cyan');
-  log('  01-brainstorm → 02-research → 03-planning → 04-ui-ux', 'gray');
-  log('  → 05-task-management → 06-implementation → 07-refactoring', 'gray');
-  log('  → 08-qa → 09-testing → 10-deployment', 'gray');
   console.log('');
 }
