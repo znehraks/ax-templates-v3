@@ -134,7 +134,7 @@ tmux send-keys -t "${SESSION_NAME}:0.1" "${WRAPPER_SCRIPT} ${BYPASS_MODE}" Enter
 tmux select-pane -t "${SESSION_NAME}:0.1"
 
 # Set up pane titles for clarity
-tmux select-pane -t "${SESSION_NAME}:0.0" -T "Orchestrator"
+tmux select-pane -t "${SESSION_NAME}:0.0" -T "Context Manager"
 tmux select-pane -t "${SESSION_NAME}:0.1" -T "Claude"
 
 # Enable pane titles display
@@ -144,12 +144,12 @@ tmux set-option -t "${SESSION_NAME}" pane-border-format " #{pane_title} "
 echo -e "${GREEN}Session created successfully!${NC}"
 echo ""
 echo "Layout:"
-echo "+--------------+------------------------+"
-echo "|              |                        |"
-echo "| Orchestrator |      Claude (50%)      |"
-echo "|    (50%)     |                        |"
-echo "|              |                        |"
-echo "+--------------+------------------------+"
+echo "+------------------+------------------------+"
+echo "|                  |                        |"
+echo "| Context Manager  |      Claude (50%)      |"
+echo "|      (50%)       |                        |"
+echo "|                  |                        |"
+echo "+------------------+------------------------+"
 echo ""
 echo -e "Attaching to session ${GREEN}${SESSION_NAME}${NC}..."
 

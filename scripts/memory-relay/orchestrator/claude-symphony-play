@@ -33,7 +33,7 @@ NC='\033[0m'
 show_help() {
     cat << 'EOF'
 +====================================================================+
-|           Claude Symphony - Memory Relay Orchestrator              |
+|        Claude Symphony - Memory Relay Context Manager              |
 +====================================================================+
 |                                                                    |
 |  Automatically manages Claude session handoffs when context        |
@@ -47,9 +47,9 @@ USAGE:
 COMMANDS:
     (none)          Start Claude with relay orchestration (default)
     start           Same as above
-    status          Show orchestrator status
+    status          Show Context Manager status
     logs            View relay logs
-    stop            Stop the orchestrator
+    stop            Stop the Context Manager
     cleanup         Clean up stale FIFO and PID files
     help            Show this help message
 
@@ -103,12 +103,12 @@ show_status() {
     if [[ -f "${pid_file}" ]]; then
         local pid=$(cat "${pid_file}")
         if kill -0 "${pid}" 2>/dev/null; then
-            echo -e "Orchestrator: ${GREEN}Running${NC} (PID: ${pid})"
+            echo -e "Context Manager: ${GREEN}Running${NC} (PID: ${pid})"
         else
-            echo -e "Orchestrator: ${RED}Stopped${NC} (stale PID file)"
+            echo -e "Context Manager: ${RED}Stopped${NC} (stale PID file)"
         fi
     else
-        echo -e "Orchestrator: ${YELLOW}Not running${NC}"
+        echo -e "Context Manager: ${YELLOW}Not running${NC}"
     fi
 
     # FIFO status

@@ -147,23 +147,20 @@ claude-symphony play:status
 
 # View logs
 claude-symphony play:logs -f
-
-# Stop orchestrator
-claude-symphony play:stop
 ```
 
 ### Session Layout
 
 ```
-+--------------+------------------------+
-|              |                        |
-| Orchestrator |      Claude (50%)      |
-|    (50%)     |                        |
-|              |                        |
-+--------------+------------------------+
++------------------+------------------------+
+|                  |                        |
+| Context Manager  |      Claude (50%)      |
+|      (50%)       |                        |
+|                  |                        |
++------------------+------------------------+
 ```
 
-- **Orchestrator** (left): Monitors context and handles session handoffs
+- **Context Manager** (left): Monitors context and handles session handoffs
 - **Claude** (right): Main workspace for development
 
 ## Commands
@@ -175,9 +172,8 @@ claude-symphony play:stop
 | `claude-symphony init` | Initialize a new project |
 | `claude-symphony play` | Start Encore Mode session |
 | `claude-symphony play --auto` | Start with bypass mode |
-| `claude-symphony play:status` | Show orchestrator status |
+| `claude-symphony play:status` | Show Context Manager status |
 | `claude-symphony play:logs` | View relay logs |
-| `claude-symphony play:stop` | Stop orchestrator |
 | `claude-symphony status` | Show pipeline status |
 | `claude-symphony stages` | List all stages |
 

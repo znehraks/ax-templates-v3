@@ -156,7 +156,7 @@ export async function playStatus(): Promise<void> {
   const status = getStatus();
 
   console.log('');
-  console.log('Memory Relay Orchestrator Status');
+  console.log('Memory Relay Context Manager Status');
   console.log('==================================');
   console.log(`Base: ${status.baseDir}`);
   console.log('');
@@ -194,16 +194,3 @@ export async function playLogs(options: PlayLogsOptions): Promise<void> {
   await execShell(cmd, { stdio: 'inherit' });
 }
 
-/**
- * Stop Memory Relay orchestrator
- */
-export async function playStop(): Promise<void> {
-  if (!pathExists(RELAY_DIR)) {
-    logWarning('Memory Relay not installed.');
-    return;
-  }
-
-  // Import and use stopOrchestrator from TypeScript module
-  const { stopOrchestrator } = await import('../../relay/orchestrator.js');
-  stopOrchestrator();
-}

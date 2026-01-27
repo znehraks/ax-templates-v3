@@ -115,7 +115,7 @@ export function createTmuxSession(options: SessionOptions): boolean {
     execSync(`tmux select-pane -t "${sessionName}:0.1"`, { stdio: 'pipe' });
 
     // Set up pane titles for clarity
-    execSync(`tmux select-pane -t "${sessionName}:0.0" -T "Orchestrator"`, { stdio: 'pipe' });
+    execSync(`tmux select-pane -t "${sessionName}:0.0" -T "Context Manager"`, { stdio: 'pipe' });
     execSync(`tmux select-pane -t "${sessionName}:0.1" -T "Claude"`, { stdio: 'pipe' });
 
     // Enable pane titles display
@@ -176,12 +176,12 @@ function buildWrapperCommand(options: SessionOptions): string {
 function showSessionLayout(): void {
   console.log('');
   console.log('Layout:');
-  console.log('+--------------+------------------------+');
-  console.log('|              |                        |');
-  console.log('| Orchestrator |      Claude (50%)      |');
-  console.log('|    (50%)     |                        |');
-  console.log('|              |                        |');
-  console.log('+--------------+------------------------+');
+  console.log('+------------------+------------------------+');
+  console.log('|                  |                        |');
+  console.log('| Context Manager  |      Claude (50%)      |');
+  console.log('|      (50%)       |                        |');
+  console.log('|                  |                        |');
+  console.log('+------------------+------------------------+');
   console.log('');
 }
 

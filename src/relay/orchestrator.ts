@@ -54,7 +54,7 @@ function log(level: LogLevel, message: string): void {
  * Cleanup function for graceful shutdown
  */
 function cleanup(): void {
-  log('INFO', 'Orchestrator shutting down...');
+  log('INFO', 'Context Manager shutting down...');
 
   const config = getConfig();
 
@@ -229,8 +229,8 @@ function startOrchestrator(): void {
   // Check if already running
   const status = checkRunning();
   if (status.running) {
-    log('WARN', `Orchestrator already running (PID: ${status.pid})`);
-    console.log('Orchestrator is already running');
+    log('WARN', `Context Manager already running (PID: ${status.pid})`);
+    console.log('Context Manager is already running');
     process.exit(1);
   }
 
@@ -247,7 +247,7 @@ function startOrchestrator(): void {
   // Write PID file
   fs.writeFileSync(config.pidFile, String(process.pid));
 
-  log('INFO', `Orchestrator starting (PID: ${process.pid})`);
+  log('INFO', `Context Manager starting (PID: ${process.pid})`);
 
   // Set up signal handlers
   process.on('SIGTERM', cleanup);
@@ -268,7 +268,7 @@ function stopOrchestrator(): void {
   const config = getConfig();
 
   if (!fs.existsSync(config.pidFile)) {
-    console.log('Orchestrator not running');
+    console.log('Context Manager not running');
     return;
   }
 
@@ -278,16 +278,16 @@ function stopOrchestrator(): void {
     // Check if process is alive
     try {
       process.kill(pid, 0);
-      log('INFO', `Stopping orchestrator (PID: ${pid})`);
+      log('INFO', `Stopping Context Manager (PID: ${pid})`);
       process.kill(pid, 'SIGTERM');
       fs.unlinkSync(config.pidFile);
-      console.log('Orchestrator stopped');
+      console.log('Context Manager stopped');
     } catch {
-      console.log('Orchestrator not running (stale PID)');
+      console.log('Context Manager not running (stale PID)');
       fs.unlinkSync(config.pidFile);
     }
   } catch {
-    console.log('Orchestrator not running');
+    console.log('Context Manager not running');
   }
 }
 
@@ -297,7 +297,7 @@ function stopOrchestrator(): void {
 function showStatus(): void {
   const config = getConfig();
 
-  console.log(chalk.blue('Memory Relay Orchestrator Status'));
+  console.log(chalk.blue('Memory Relay Context Manager Status'));
   console.log('==================================');
   console.log(`Base: ${config.baseDir}`);
   console.log('');

@@ -5,7 +5,7 @@
 import { Command } from 'commander';
 import { createProject } from './commands/create.js';
 import { runStage, nextStage, gotoStage, listStages } from './commands/stage.js';
-import { playCommand, playStatus, playLogs, playStop } from './commands/play.js';
+import { playCommand, playStatus, playLogs } from './commands/play.js';
 import { showStatus, showDashboard, showContextStatus } from './commands/status.js';
 import { validateConfig } from './commands/validate.js';
 import {
@@ -212,7 +212,7 @@ program
 // play:status command
 program
   .command('play:status')
-  .description('Show Memory Relay orchestrator status')
+  .description('Show Memory Relay Context Manager status')
   .action(async () => {
     await playStatus();
   });
@@ -224,14 +224,6 @@ program
   .option('-f, --follow', 'Follow logs in real-time')
   .action(async (options: { follow?: boolean }) => {
     await playLogs(options);
-  });
-
-// play:stop command
-program
-  .command('play:stop')
-  .description('Stop Memory Relay orchestrator')
-  .action(async () => {
-    await playStop();
   });
 
 program.parse();

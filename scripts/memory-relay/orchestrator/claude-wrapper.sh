@@ -55,7 +55,7 @@ signal_relay_ready() {
 
     # Validate FIFO exists
     if [[ ! -p "${FIFO_PATH}" ]]; then
-        echo -e "${YELLOW}[Symphony Relay]${NC} Orchestrator not running (FIFO missing)"
+        echo -e "${YELLOW}[Symphony Relay]${NC} Context Manager not running (FIFO missing)"
         log_relay "ERROR: FIFO not found at ${FIFO_PATH}"
         return 1
     fi

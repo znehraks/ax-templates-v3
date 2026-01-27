@@ -53,8 +53,10 @@ log() {
 
 # Cleanup function
 cleanup() {
-    log "INFO" "Orchestrator shutting down..."
+    log "INFO" "Context Manager shutting down..."
     rm -f "${PID_FILE}"
+    # Kill entire tmux session when orchestrator exits
+    tmux kill-session -t "symphony-session" 2>/dev/null || true
 }
 
 trap cleanup EXIT
@@ -78,7 +80,7 @@ check_running() {
     if [[ -f "${PID_FILE}" ]]; then
         local pid=$(cat "${PID_FILE}")
         if kill -0 "${pid}" 2>/dev/null; then
-            log "WARN" "Orchestrator already running (PID: ${pid})"
+            log "WARN" "Context Manager already running (PID: ${pid})"
             return 0
         else
             log "INFO" "Removing stale PID file"
@@ -187,7 +189,7 @@ main_loop() {
 
 # Status command
 show_status() {
-    echo -e "${BLUE}Memory Relay Orchestrator Status${NC}"
+    echo -e "${BLUE}Memory Relay Context Manager Status${NC}"
     echo "=================================="
     echo "Base: ${RELAY_BASE}"
     echo ""
@@ -217,16 +219,16 @@ stop_orchestrator() {
     if [[ -f "${PID_FILE}" ]]; then
         local pid=$(cat "${PID_FILE}")
         if kill -0 "${pid}" 2>/dev/null; then
-            log "INFO" "Stopping orchestrator (PID: ${pid})"
+            log "INFO" "Stopping Context Manager (PID: ${pid})"
             kill "${pid}"
             rm -f "${PID_FILE}"
-            echo "Orchestrator stopped"
+            echo "Context Manager stopped"
         else
-            echo "Orchestrator not running (stale PID)"
+            echo "Context Manager not running (stale PID)"
             rm -f "${PID_FILE}"
         fi
     else
-        echo "Orchestrator not running"
+        echo "Context Manager not running"
     fi
 }
 
@@ -234,13 +236,13 @@ stop_orchestrator() {
 case "${1:-start}" in
     start)
         if check_running; then
-            echo "Orchestrator is already running"
+            echo "Context Manager is already running"
             exit 1
         fi
 
         create_fifo
         echo $$ > "${PID_FILE}"
-        log "INFO" "Orchestrator starting (PID: $$)"
+        log "INFO" "Context Manager starting (PID: $$)"
         main_loop
         ;;
     stop)
