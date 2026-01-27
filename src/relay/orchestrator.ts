@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
-import { getConfig, getRelayDir } from './config.js';
+import { getConfig } from './config.js';
 import { createFifo, isFifo, startFifoReader } from './fifo.js';
 import { ensureDir } from '../utils/fs.js';
 import type { RelaySignal, OrchestratorCommand, OrchestratorStatus, LogLevel } from './types.js';
@@ -102,20 +102,74 @@ function checkRunning(): { running: boolean; pid?: number } {
 }
 
 /**
- * Send ACK back to Claude session via tmux
+ * Sleep helper
  */
-function sendAck(sourcePane: string, newPane: string): boolean {
-  const ackMessage = `RELAY_ACK:${newPane}`;
-  log('INFO', `Sending ACK to pane ${sourcePane}: ${ackMessage}`);
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Wait for /clear to complete by checking pane output
+ */
+async function waitForClearComplete(paneId: string, timeout: number): Promise<void> {
+  const startTime = Date.now();
+
+  log('INFO', `Waiting for /clear to complete in pane ${paneId} (timeout: ${timeout}ms)`);
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      // Capture last few lines of pane output
+      const output = execSync(
+        `tmux capture-pane -t "${paneId}" -p -S -5`,
+        { encoding: 'utf8', stdio: 'pipe' }
+      );
+
+      // Check for Claude prompt ready state
+      // After /clear, Claude shows a fresh prompt (usually ends with ">" or is waiting for input)
+      const trimmed = output.trim();
+
+      // Look for signs that Claude is ready for input:
+      // - Empty or minimal output after clear
+      // - Prompt character at end
+      // - No "Thinking..." or processing indicators
+      if (trimmed.endsWith('>') || trimmed === '' || /^[>\s]*$/.test(trimmed)) {
+        await sleep(500); // Small stabilization delay
+        log('INFO', '/clear completed, Claude is ready for input');
+        return;
+      }
+    } catch {
+      // Ignore capture errors, retry
+    }
+
+    await sleep(500);
+  }
+
+  throw new Error(`Timeout waiting for /clear to complete after ${timeout}ms`);
+}
+
+/**
+ * Send prompt to pane via tmux send-keys
+ */
+function sendPromptToPane(paneId: string, prompt: string): void {
+  // Escape special characters for tmux send-keys
+  const escaped = prompt.replace(/"/g, '\\"').replace(/'/g, "'\\''");
+
+  log('INFO', `Sending handoff prompt to pane ${paneId}`);
 
   try {
-    execSync(`tmux send-keys -t "${sourcePane}" "# ${ackMessage}" Enter`, { stdio: 'pipe' });
-    log('INFO', 'ACK sent successfully');
-    return true;
-  } catch {
-    log('WARN', `Failed to send ACK to pane ${sourcePane}`);
-    return false;
+    execSync(`tmux send-keys -t "${paneId}" "${escaped}" Enter`, { stdio: 'pipe' });
+    log('INFO', 'Handoff prompt sent successfully');
+  } catch (error) {
+    log('ERROR', `Failed to send prompt to pane: ${error}`);
+    throw error;
   }
+}
+
+/**
+ * Build continuation prompt for handoff
+ */
+function buildContinuationPrompt(handoffPath: string): string {
+  return `${handoffPath} 파일을 읽고 이어서 작업을 진행해주세요.`;
 }
 
 /**
@@ -139,7 +193,7 @@ function archiveHandoff(handoffPath: string): void {
 /**
  * Handle a relay signal
  */
-function handleRelaySignal(signal: RelaySignal): void {
+async function handleRelaySignal(signal: RelaySignal): Promise<void> {
   log('INFO', `Received signal: ${signal.type}`);
 
   if (signal.type !== 'RELAY_READY') {
@@ -157,45 +211,26 @@ function handleRelaySignal(signal: RelaySignal): void {
     return;
   }
 
-  const workDir = path.dirname(signal.handoffPath);
-  log('INFO', 'Creating new tmux pane for Claude session');
+  const { handoffPath, paneId } = signal;
 
   try {
-    // Create new pane with Claude wrapper
-    const relayDir = getRelayDir();
-    const wrapperScript = path.join(relayDir, 'orchestrator/claude-wrapper.sh');
+    // Step 1: Send /clear command to current pane
+    log('INFO', `Sending /clear to pane ${paneId}`);
+    execSync(`tmux send-keys -t "${paneId}" "/clear" Enter`, { stdio: 'pipe' });
 
-    const result = execSync(
-      `tmux split-window -h -P -F "#{pane_id}" -c "${workDir}" "${wrapperScript} '${signal.handoffPath}'"`,
-      { encoding: 'utf8', stdio: 'pipe' }
-    );
+    // Step 2: Wait for /clear to complete (prompt ready)
+    await waitForClearComplete(paneId, 15000); // 15 second timeout
 
-    const newPane = result.trim();
+    // Step 3: Send handoff prompt
+    const prompt = buildContinuationPrompt(handoffPath);
+    sendPromptToPane(paneId, prompt);
 
-    if (newPane) {
-      log('INFO', `New pane created: ${newPane}`);
+    log('INFO', 'Session handoff complete via /clear injection');
 
-      // Wait for pane to initialize
-      execSync('sleep 2', { stdio: 'pipe' });
-
-      // Verify pane exists
-      try {
-        const panes = execSync('tmux list-panes -F "#{pane_id}"', { encoding: 'utf8', stdio: 'pipe' });
-        if (panes.includes(newPane)) {
-          log('INFO', 'New Claude session started successfully');
-          sendAck(signal.paneId, newPane);
-          archiveHandoff(signal.handoffPath);
-        } else {
-          log('ERROR', `New pane ${newPane} not found after creation`);
-        }
-      } catch {
-        log('ERROR', 'Failed to verify new pane');
-      }
-    } else {
-      log('ERROR', 'Failed to create new pane: empty result');
-    }
+    // Archive the handoff file
+    archiveHandoff(handoffPath);
   } catch (error) {
-    log('ERROR', `Failed to create new pane: ${error}`);
+    log('ERROR', `Session handoff failed: ${error}`);
   }
 }
 
@@ -212,7 +247,10 @@ function mainLoop(): void {
   cleanupFn = startFifoReader(
     config.fifoPath,
     (signal) => {
-      handleRelaySignal(signal);
+      // Handle async signal processing
+      handleRelaySignal(signal).catch((error) => {
+        log('ERROR', `Failed to handle relay signal: ${error}`);
+      });
     },
     (error) => {
       log('ERROR', `FIFO reader error: ${error.message}`);

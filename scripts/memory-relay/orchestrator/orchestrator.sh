@@ -90,21 +90,57 @@ check_running() {
     return 1
 }
 
-# Send ACK back to Claude session
-send_ack() {
-    local source_pane="$1"
-    local new_pane="$2"
-    local ack_message="RELAY_ACK:${new_pane}"
+# Wait for /clear to complete
+wait_for_clear_complete() {
+    local pane_id="$1"
+    local timeout="${2:-15}"
+    local elapsed=0
 
-    log "INFO" "Sending ACK to pane ${source_pane}: ${ack_message}"
+    log "INFO" "Waiting for /clear to complete in pane ${pane_id} (timeout: ${timeout}s)"
 
-    if tmux send-keys -t "${source_pane}" "# ${ack_message}" Enter 2>/dev/null; then
-        log "INFO" "ACK sent successfully"
+    while [[ ${elapsed} -lt ${timeout} ]]; do
+        # Capture last few lines of pane output
+        local output
+        output=$(tmux capture-pane -t "${pane_id}" -p -S -5 2>/dev/null || echo "")
+
+        # Check for Claude prompt ready state (ends with > or is empty/minimal)
+        local trimmed
+        trimmed=$(echo "${output}" | tr -d '[:space:]')
+
+        if [[ -z "${trimmed}" ]] || [[ "${output}" =~ \>$ ]]; then
+            sleep 0.5  # Small stabilization delay
+            log "INFO" "/clear completed, Claude is ready for input"
+            return 0
+        fi
+
+        sleep 0.5
+        ((elapsed++))
+    done
+
+    log "ERROR" "Timeout waiting for /clear to complete after ${timeout}s"
+    return 1
+}
+
+# Send prompt to pane
+send_prompt_to_pane() {
+    local pane_id="$1"
+    local prompt="$2"
+
+    log "INFO" "Sending handoff prompt to pane ${pane_id}"
+
+    if tmux send-keys -t "${pane_id}" "${prompt}" Enter 2>/dev/null; then
+        log "INFO" "Handoff prompt sent successfully"
         return 0
     else
-        log "WARN" "Failed to send ACK to pane ${source_pane}"
+        log "ERROR" "Failed to send prompt to pane ${pane_id}"
         return 1
     fi
+}
+
+# Build continuation prompt
+build_continuation_prompt() {
+    local handoff_path="$1"
+    echo "${handoff_path} 파일을 읽고 이어서 작업을 진행해주세요."
 }
 
 # Handle relay signal
@@ -115,47 +151,43 @@ handle_relay_signal() {
     # Parse signal: RELAY_READY:handoff_path:source_pane
     if [[ "${signal}" =~ ^RELAY_READY:(.+):(.+)$ ]]; then
         local handoff_path="${BASH_REMATCH[1]}"
-        local source_pane="${BASH_REMATCH[2]}"
+        local pane_id="${BASH_REMATCH[2]}"
 
         log "INFO" "Processing relay request"
         log "INFO" "  Handoff path: ${handoff_path}"
-        log "INFO" "  Source pane: ${source_pane}"
+        log "INFO" "  Pane: ${pane_id}"
 
         if [[ ! -f "${handoff_path}" ]]; then
             log "ERROR" "Handoff file not found: ${handoff_path}"
             return 1
         fi
 
-        local work_dir=$(dirname "${handoff_path}")
-
-        log "INFO" "Creating new tmux pane for Claude session"
-
-        local new_pane
-        new_pane=$(tmux split-window -h -P -F "#{pane_id}" \
-            -c "${work_dir}" \
-            "${ORCHESTRATOR_DIR}/claude-wrapper.sh '${handoff_path}'" 2>&1)
-
-        if [[ $? -eq 0 ]] && [[ -n "${new_pane}" ]]; then
-            log "INFO" "New pane created: ${new_pane}"
-            sleep 2
-
-            if tmux list-panes -F "#{pane_id}" | grep -q "${new_pane}"; then
-                log "INFO" "New Claude session started successfully"
-                send_ack "${source_pane}" "${new_pane}"
-                archive_handoff "${handoff_path}"
-                # Terminate old pane after new session is stable
-                sleep 2
-                log "INFO" "Terminating old pane: ${source_pane}"
-                tmux kill-pane -t "${source_pane}" 2>/dev/null || true
-                return 0
-            else
-                log "ERROR" "New pane ${new_pane} not found after creation"
-                return 1
-            fi
-        else
-            log "ERROR" "Failed to create new pane: ${new_pane}"
+        # Step 1: Send /clear command to current pane
+        log "INFO" "Sending /clear to pane ${pane_id}"
+        if ! tmux send-keys -t "${pane_id}" "/clear" Enter 2>/dev/null; then
+            log "ERROR" "Failed to send /clear to pane ${pane_id}"
             return 1
         fi
+
+        # Step 2: Wait for /clear to complete
+        if ! wait_for_clear_complete "${pane_id}" 15; then
+            log "ERROR" "Clear did not complete in time"
+            return 1
+        fi
+
+        # Step 3: Send handoff prompt
+        local prompt
+        prompt=$(build_continuation_prompt "${handoff_path}")
+        if ! send_prompt_to_pane "${pane_id}" "${prompt}"; then
+            log "ERROR" "Failed to send handoff prompt"
+            return 1
+        fi
+
+        log "INFO" "Session handoff complete via /clear injection"
+
+        # Archive the handoff file
+        archive_handoff "${handoff_path}"
+        return 0
     else
         log "WARN" "Invalid signal format: ${signal}"
         return 1
