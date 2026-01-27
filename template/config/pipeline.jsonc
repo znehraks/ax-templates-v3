@@ -1,6 +1,6 @@
 // claude-symphony Pipeline Configuration
 {
-  "$schema": "../../schemas/pipeline.schema.json",
+  "$schema": "https://raw.githubusercontent.com/znehraks/claude-symphony/main/schemas/pipeline.schema.json",
   "pipeline": {
     "name": "Multi-AI Development Workflow",
     "version": "1.0.0",

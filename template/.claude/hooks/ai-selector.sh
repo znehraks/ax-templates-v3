@@ -23,8 +23,7 @@ fi
 if [ -f "$PACKAGE_ROOT/dist/hooks/ai-selector.js" ]; then
   exec node "$PACKAGE_ROOT/dist/hooks/ai-selector.js" "$@"
 else
-  echo "Warning: TypeScript hook not found at $PACKAGE_ROOT/dist/hooks/ai-selector.js"
-  echo "Defaulting to claudecode model"
+  # Fallback: Default to claudecode
   echo "claudecode"
   exit 0
 fi

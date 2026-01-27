@@ -14,7 +14,7 @@
           "critical_decision"
         ],
         "storage": {
-          "project_prefix": "claude-symphony",
+          "project_prefix": "{{PROJECT_NAME}}",
           "observation_types": [
             "decision",
             "discovery",

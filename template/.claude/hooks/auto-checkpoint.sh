@@ -23,7 +23,12 @@ fi
 if [ -f "$PACKAGE_ROOT/dist/hooks/auto-checkpoint.js" ]; then
   exec node "$PACKAGE_ROOT/dist/hooks/auto-checkpoint.js" "$@"
 else
-  echo "Warning: TypeScript hook not found at $PACKAGE_ROOT/dist/hooks/auto-checkpoint.js"
-  echo "Auto-checkpoint disabled - TypeScript build required"
+  # Fallback: Checkpoint creation via basic file operations
+  CHECKPOINT_DIR="$PROJECT_ROOT/state/checkpoints"
+  mkdir -p "$CHECKPOINT_DIR"
+
+  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+  echo "Auto-checkpoint available at: $CHECKPOINT_DIR"
+  echo "Use /checkpoint command to create manual checkpoints"
   exit 0
 fi

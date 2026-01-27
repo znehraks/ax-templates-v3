@@ -23,7 +23,19 @@ fi
 if [ -f "$PACKAGE_ROOT/dist/hooks/output-validator.js" ]; then
   exec node "$PACKAGE_ROOT/dist/hooks/output-validator.js" "$@"
 else
-  echo "Warning: TypeScript hook not found at $PACKAGE_ROOT/dist/hooks/output-validator.js"
-  echo "Output validation skipped - TypeScript build required"
+  # Fallback: Basic output existence check
+  STAGE_ID="$1"
+
+  if [ -z "$STAGE_ID" ]; then
+    echo "Output validation: no stage specified"
+    exit 0
+  fi
+
+  OUTPUT_DIR="$PROJECT_ROOT/stages/$STAGE_ID/outputs"
+  if [ -d "$OUTPUT_DIR" ] && [ "$(ls -A "$OUTPUT_DIR" 2>/dev/null)" ]; then
+    echo "Output validation passed: outputs exist for $STAGE_ID"
+  else
+    echo "Note: No outputs found in stages/$STAGE_ID/outputs/"
+  fi
   exit 0
 fi

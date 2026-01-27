@@ -21,16 +21,11 @@ Call Gemini CLI through tmux session.
    - Read results from output file
    - Display to user
 
-## Execution Script
+## Execution
 
-```bash
-scripts/ai-call.sh gemini "$ARGUMENTS"
-```
+This command executes the Gemini CLI directly through a tmux session. If Gemini CLI is not available, ClaudeCode will handle the request as a fallback.
 
-Alternatively, direct wrapper call:
-```bash
-scripts/gemini-wrapper.sh "$ARGUMENTS"
-```
+**Note**: Ensure Gemini CLI is installed and tmux is available for session management.
 
 ## Example
 
@@ -104,4 +99,3 @@ ClaudeCode will then execute the same prompt directly.
 
 ## Related
 - `/codex`: Codex CLI call
-- `scripts/gemini-wrapper.sh`: Wrapper script

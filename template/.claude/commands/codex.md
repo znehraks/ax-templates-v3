@@ -21,16 +21,11 @@ Call OpenAI Codex CLI through tmux session.
    - Read results from output file
    - Display to user
 
-## Execution Script
+## Execution
 
-```bash
-scripts/ai-call.sh codex "$ARGUMENTS"
-```
+This command executes the Codex CLI directly through a tmux session. If Codex CLI is not available, ClaudeCode will handle the request as a fallback.
 
-Alternatively, direct wrapper call:
-```bash
-scripts/codex-wrapper.sh "$ARGUMENTS"
-```
+**Note**: Ensure Codex CLI is installed and tmux is available for session management.
 
 ## Example
 
@@ -127,4 +122,3 @@ ClaudeCode will then execute the same prompt directly.
 
 ## Related
 - `/gemini`: Gemini CLI call
-- `scripts/codex-wrapper.sh`: Wrapper script

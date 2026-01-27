@@ -1,6 +1,6 @@
 // claude-symphony Tech Stack Presets Configuration
 {
-  "$schema": "../../schemas/tech_stack.schema.json",
+  "$schema": "https://raw.githubusercontent.com/znehraks/claude-symphony/main/schemas/tech_stack.schema.json",
   "tech_stack_presets": {
     "version": "1.0",
     "description": "Pre-configured technology stack combinations for quick project setup",

@@ -46,7 +46,6 @@ Task breakdown and sprint planning stage
 4. Deliverables per milestone definition
 
 ## Input Files
-<!-- $STAGES_ROOT = stages/ directory in project root -->
 - `$STAGES_ROOT/03-planning/outputs/project_plan.md`
 - `$STAGES_ROOT/03-planning/outputs/architecture.md`
 - `$STAGES_ROOT/04-ui-ux/outputs/design_system.md`

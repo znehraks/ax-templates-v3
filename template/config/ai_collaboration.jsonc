@@ -1,6 +1,6 @@
 // claude-symphony AI Collaboration Configuration
 {
-  "$schema": "../../schemas/ai_collaboration.schema.json",
+  "$schema": "https://raw.githubusercontent.com/znehraks/claude-symphony/main/schemas/ai_collaboration.schema.json",
   "execution_policy": {
     "default_mode": "parallel",
     "stage_classification": {

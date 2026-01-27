@@ -41,7 +41,6 @@ Core feature implementation stage
 4. API implementation
 
 ## Input Files
-<!-- $STAGES_ROOT = stages/ directory in project root -->
 - `$STAGES_ROOT/05-task-management/outputs/tasks.md`
 - `$STAGES_ROOT/03-planning/outputs/architecture.md`
 - `$STAGES_ROOT/03-planning/outputs/implementation.yaml` - **Implementation rules (required reference!)**

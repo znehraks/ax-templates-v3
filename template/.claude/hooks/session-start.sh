@@ -23,7 +23,13 @@ fi
 if [ -f "$PACKAGE_ROOT/dist/hooks/session-start.js" ]; then
   exec node "$PACKAGE_ROOT/dist/hooks/session-start.js" "$@"
 else
-  echo "Warning: TypeScript hook not found at $PACKAGE_ROOT/dist/hooks/session-start.js"
-  echo "Session recovery check skipped - TypeScript build required"
+  # Fallback: Basic session start check
+  # Check for recovery files
+  PROGRESS_FILE="$PROJECT_ROOT/state/progress.json"
+  if [ -f "$PROGRESS_FILE" ]; then
+    echo "Session started - found existing progress state"
+  else
+    echo "Session started - new project detected"
+  fi
   exit 0
 fi

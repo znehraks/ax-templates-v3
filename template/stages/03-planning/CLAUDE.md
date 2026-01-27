@@ -62,7 +62,6 @@ System architecture and technology stack decision stage
 4. Milestone definition
 
 ## Input Files
-<!-- $STAGES_ROOT = stages/ directory in project root -->
 - `$STAGES_ROOT/02-research/outputs/tech_research.md`
 - `$STAGES_ROOT/02-research/outputs/feasibility_report.md`
 - `$STAGES_ROOT/02-research/HANDOFF.md`

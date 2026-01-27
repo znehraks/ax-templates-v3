@@ -25,9 +25,7 @@ fi
 if [ -f "$PACKAGE_ROOT/dist/hooks/pre-stage.js" ]; then
   exec node "$PACKAGE_ROOT/dist/hooks/pre-stage.js" "$@"
 else
-  echo "Warning: TypeScript hook not found at $PACKAGE_ROOT/dist/hooks/pre-stage.js"
-  echo "Falling back to basic validation..."
-
+  # Fallback: Basic pre-stage validation (advanced features via npm package)
   STAGE_ID="$1"
 
   if [ -z "$STAGE_ID" ]; then
@@ -35,7 +33,12 @@ else
     exit 1
   fi
 
-  echo "Pre-stage check for: $STAGE_ID"
-  echo "Tip: Run 'npm run build' in claude-symphony to enable full hook functionality"
-  exit 0
+  # Basic validation: check if stage directory exists
+  if [ -d "$PROJECT_ROOT/stages/$STAGE_ID" ]; then
+    echo "Pre-stage check passed: $STAGE_ID"
+    exit 0
+  else
+    echo "Warning: Stage directory not found: stages/$STAGE_ID"
+    exit 0
+  fi
 fi

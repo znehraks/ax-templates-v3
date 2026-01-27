@@ -1,6 +1,6 @@
 // claude-symphony AI Models Configuration
 {
-  "$schema": "../../schemas/models.schema.json",
+  "$schema": "https://raw.githubusercontent.com/znehraks/claude-symphony/main/schemas/models.schema.json",
   "models": {
     "claudecode": {
       "provider": "anthropic",

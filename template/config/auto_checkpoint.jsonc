@@ -1,6 +1,6 @@
 // claude-symphony Auto-Checkpoint Configuration
 {
-  "$schema": "../../schemas/auto_checkpoint.schema.json",
+  "$schema": "https://raw.githubusercontent.com/znehraks/claude-symphony/main/schemas/auto_checkpoint.schema.json",
   "auto_checkpoint": {
     "enabled": true,
     "description": "Automatic checkpoint creation and management",

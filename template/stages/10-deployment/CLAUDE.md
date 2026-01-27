@@ -41,7 +41,6 @@ Deployment pipeline setup and deployment stage
 4. Documentation completion
 
 ## Input Files
-<!-- $STAGES_ROOT = stages/ directory in project root -->
 - `source_code/` - Final source code (in PROJECT_ROOT)
 - `$STAGES_ROOT/09-testing/outputs/tests/`
 - `$STAGES_ROOT/09-testing/outputs/test_report.md`

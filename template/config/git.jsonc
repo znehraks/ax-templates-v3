@@ -1,6 +1,6 @@
 // Git Configuration
 {
-  "$schema": "../../schemas/git.schema.json",
+  "$schema": "https://raw.githubusercontent.com/znehraks/claude-symphony/main/schemas/git.schema.json",
   "git": {
     "auto_commit": {
       "enabled": true,

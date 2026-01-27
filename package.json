@@ -15,16 +15,21 @@
   ],
   "scripts": {
     "build": "tsup && npm run build:schema",
-    "build:schema": "tsx scripts/build-schema.ts",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "build:schema": "tsx scripts/dev/build-schema.ts",
+    "migrate:jsonc": "tsx scripts/dev/migrate-yaml-to-jsonc.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint src --ext .ts",
-    "clean": "rm -rf dist",
-    "migrate:jsonc": "tsx scripts/migrate-yaml-to-jsonc.ts",
-    "prepublishOnly": "npm run build"
+    "test:pipeline": "tsx scripts/test/test-pipeline.ts",
+    "test:mcp-fallback": "tsx scripts/test/test-mcp-fallback.ts",
+    "test:quota": "tsx scripts/test/test-quota-management.ts",
+    "validate:env": "tsx scripts/user/validate-env.ts",
+    "rollback": "tsx scripts/user/rollback.ts"
   },
   "keywords": [
     "ai",

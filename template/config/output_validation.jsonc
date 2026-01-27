@@ -1,6 +1,6 @@
 // claude-symphony Output Validation Configuration
 {
-  "$schema": "../../schemas/output_validation.schema.json",
+  "$schema": "https://raw.githubusercontent.com/znehraks/claude-symphony/main/schemas/output_validation.schema.json",
   "validation": {
     "enabled": true,
     "description": "Per-stage output verification and quality assurance",

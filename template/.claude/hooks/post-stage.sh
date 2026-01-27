@@ -23,9 +23,7 @@ fi
 if [ -f "$PACKAGE_ROOT/dist/hooks/post-stage.js" ]; then
   exec node "$PACKAGE_ROOT/dist/hooks/post-stage.js" "$@"
 else
-  echo "Warning: TypeScript hook not found at $PACKAGE_ROOT/dist/hooks/post-stage.js"
-  echo "Falling back to basic completion..."
-
+  # Fallback: Basic post-stage completion
   STAGE_ID="$1"
 
   if [ -z "$STAGE_ID" ]; then
@@ -33,7 +31,14 @@ else
     exit 1
   fi
 
-  echo "Post-stage tasks for: $STAGE_ID"
-  echo "Tip: Run 'npm run build' in claude-symphony to enable full hook functionality"
+  echo "Stage completed: $STAGE_ID"
+
+  # Basic completion: check if HANDOFF.md exists
+  HANDOFF_FILE="$PROJECT_ROOT/stages/$STAGE_ID/HANDOFF.md"
+  if [ -f "$HANDOFF_FILE" ]; then
+    echo "HANDOFF.md verified for $STAGE_ID"
+  else
+    echo "Note: Consider creating HANDOFF.md for stage transition"
+  fi
   exit 0
 fi
