@@ -42,6 +42,56 @@ This is a Claude Symphony project - a 10-stage software development workflow pow
 - `/checkpoint` - Save current state
 - `/context` - Check context usage
 
+## Context Management
+
+claude-symphony automatically manages Claude's context window to ensure continuous workflow.
+
+### Automatic Thresholds
+
+| Remaining | Status | Action |
+|-----------|--------|--------|
+| 60% | ⚡ Warning | Display warning in statusline |
+| 50% | ⚠️ Action | Auto-snapshot + recommend `/compact` |
+| 40% | 🔴 Critical | Generate HANDOFF.md + `/clear` required |
+
+### How It Works
+
+The statusline hook monitors context usage every 300ms. When thresholds are reached:
+
+1. **Auto-snapshot** is saved to `state/context/`
+2. **HANDOFF.md** is generated with recovery instructions
+3. **Memory Relay** (if active) starts a new session automatically
+
+### Context Commands
+
+```bash
+# Check context status
+/context
+
+# Save snapshot manually
+/context --save
+
+# List all snapshots
+/context --list
+
+# Trigger relay manually (requires tmux)
+/context --relay
+```
+
+### Encore Mode (Memory Relay)
+
+For infinite session orchestration, start with Memory Relay:
+
+```bash
+# Start Encore Mode
+claude-symphony-play
+
+# With auto-bypass (skip permission prompts)
+claude-symphony-play --auto
+```
+
+When context drops below 50%, the system automatically starts a new Claude session that continues from where you left off.
+
 ## Documentation
 
 See the `docs/` directory for detailed guides:
@@ -53,8 +103,19 @@ See the `docs/` directory for detailed guides:
 
 Each stage generates outputs in `stages/XX-stage/outputs/`. These outputs feed into subsequent stages automatically.
 
+## Key Files
+
+| File | Description |
+|------|-------------|
+| `state/progress.json` | Pipeline progress and current state |
+| `state/context/` | Auto-saved context snapshots |
+| `state/handoffs/` | HANDOFF archive |
+| `HANDOFF.md` | Latest session handoff document |
+| `CLAUDE.md` | AI instructions and configuration |
+
 ## Need Help?
 
 - Run `/stages` to see all available stages
 - Run `/status` for current pipeline state
+- Run `/context` to check context usage
 - Check `CLAUDE.md` for detailed AI instructions

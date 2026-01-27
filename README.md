@@ -107,6 +107,37 @@ When context drops below 50%, the system automatically:
 /context --relay
 ```
 
+### Context Automation Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  statusline.sh (polls every 300ms)                          │
+│    ↓ context ≤ 50%                                          │
+│  scripts/context-manager.sh --auto-compact                  │
+│    ↓                                                        │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ 1. Auto-snapshot → state/context/auto-snapshot-*.md   │ │
+│  │ 2. HANDOFF.md → project root                          │ │
+│  │ 3. Archive → state/handoffs/                          │ │
+│  │ 4. RELAY_READY signal → Memory Relay FIFO             │ │
+│  └────────────────────────────────────────────────────────┘ │
+│    ↓                                                        │
+│  Memory Relay Orchestrator                                  │
+│    ↓                                                        │
+│  New Claude session starts with HANDOFF.md                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `.claude/hooks/statusline.sh` | Real-time context monitoring |
+| `.claude/hooks/stop.sh` | Auto-trigger after response |
+| `scripts/context-manager.sh` | Snapshot/HANDOFF generation |
+| `state/context/` | Auto-saved snapshots |
+| `state/handoffs/` | HANDOFF archive |
+
 ## Commands
 
 ### CLI Commands
