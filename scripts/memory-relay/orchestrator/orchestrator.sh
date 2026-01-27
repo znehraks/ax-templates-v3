@@ -143,6 +143,10 @@ handle_relay_signal() {
                 log "INFO" "New Claude session started successfully"
                 send_ack "${source_pane}" "${new_pane}"
                 archive_handoff "${handoff_path}"
+                # Terminate old pane after new session is stable
+                sleep 2
+                log "INFO" "Terminating old pane: ${source_pane}"
+                tmux kill-pane -t "${source_pane}" 2>/dev/null || true
                 return 0
             else
                 log "ERROR" "New pane ${new_pane} not found after creation"

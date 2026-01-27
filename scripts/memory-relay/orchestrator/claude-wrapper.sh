@@ -154,8 +154,9 @@ if [[ -n "${HANDOFF_FILE}" ]] && [[ -f "${HANDOFF_FILE}" ]]; then
 
     show_relay_banner
 
-    # Start Claude with instruction to read handoff
-    exec $(get_claude_cmd) --resume "${HANDOFF_FILE}" 2>/dev/null || exec $(get_claude_cmd)
+    # Start Claude with system prompt to read handoff file and continue work
+    # Using --append-system-prompt to stay in interactive mode (not -p which exits after response)
+    exec $(get_claude_cmd) --append-system-prompt "IMPORTANT: A handoff file has been created at ${HANDOFF_FILE}. You MUST read this file immediately using the Read tool and continue the previous work described within it. This is a session continuation - start by reading the handoff file."
 else
     log_relay "Starting fresh Claude session with relay support"
     show_relay_banner
