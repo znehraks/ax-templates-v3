@@ -272,7 +272,7 @@ Each project created with `npx claude-symphony` is fully self-contained:
 ```
 my-project/                        # PROJECT_ROOT
 ├── .claude/                       # Claude Code configuration
-│   ├── commands/                  # Slash commands (29 commands)
+│   ├── commands/                  # Slash commands (30 commands)
 │   │   ├── epic.md                # /epic - Epic cycle management
 │   │   ├── moodboard.md           # /moodboard - Design collection
 │   │   ├── refine.md              # /refine - Requirements refinement
@@ -298,7 +298,7 @@ my-project/                        # PROJECT_ROOT
 │   │   └── HANDOFF.md
 │   ├── 02-research/
 │   └── ... (10 stages total)
-├── config/                        # Pipeline configuration (24 files)
+├── config/                        # Pipeline configuration (25 files)
 │   ├── pipeline.yaml              # Core pipeline settings
 │   ├── context.yaml               # Context management
 │   ├── epic_cycles.yaml           # Epic cycle configuration
@@ -312,13 +312,9 @@ my-project/                        # PROJECT_ROOT
 │   ├── progress.json              # Pipeline progress
 │   ├── checkpoints/               # Recovery points
 │   └── context/                   # Context snapshots
-├── scripts/                       # Helper scripts (25 scripts)
-│   ├── common.sh                  # Shared utilities
-│   ├── epic-cycle.sh              # Epic cycle management
-│   ├── moodboard-manager.sh       # Moodboard collection
-│   ├── requirements-refine.sh     # Requirements refinement
-│   ├── ai-benchmark.sh            # AI benchmarking
-│   └── ...
+├── scripts/                       # Helper scripts
+│   ├── setup-stitch-mcp.sh        # Stitch MCP setup
+│   └── stitch-quota-monitor.sh    # Quota monitoring
 ├── CLAUDE.md                      # Main AI instructions
 └── src/                           # Source code (from stage 06)
 ```
@@ -354,8 +350,13 @@ cd claude-symphony
 # Install dependencies
 npm install
 
+# Build
+npm run build
+
 # Test locally
-node bin/create.js test-project
+npx . init test-project
+# Or directly
+node dist/cli/index.js init test-project
 ```
 
 ### Repository Structure

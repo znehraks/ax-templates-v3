@@ -2,6 +2,9 @@
  * claude-symphony CLI entry point
  * Migrated from bin/create.js to TypeScript
  */
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import { Command } from 'commander';
 import { createProject } from './commands/create.js';
 import { runStage, nextStage, gotoStage, listStages } from './commands/stage.js';
@@ -16,12 +19,28 @@ import {
 } from './commands/checkpoint.js';
 import type { StageId } from '../types/stage.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/**
+ * Get package version from package.json
+ */
+function getPackageVersion(): string {
+  try {
+    const pkgPath = path.resolve(__dirname, '../../package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+    return pkg.version || '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+}
+
 const program = new Command();
 
 program
   .name('claude-symphony')
   .description('Multi-AI Orchestration Framework - 10-stage development workflow')
-  .version('0.1.0');
+  .version(getPackageVersion());
 
 // init command: create project
 program
