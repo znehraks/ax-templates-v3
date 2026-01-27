@@ -13,6 +13,10 @@ COOLDOWN_FILE="$PROJECT_ROOT/state/context/.last-compact"
 CONTEXT_DIR="$PROJECT_ROOT/state/context"
 PROGRESS_FILE="$PROJECT_ROOT/state/progress.json"
 
+# Memory Relay FIFO paths
+MEMORY_RELAY_FIFO_GLOBAL="$HOME/.claude/memory-relay/orchestrator/signals/relay.fifo"
+MEMORY_RELAY_FIFO_LOCAL="$PROJECT_ROOT/scripts/memory-relay/orchestrator/signals/relay.fifo"
+
 # Cooldown time (seconds) - 5 minutes
 COOLDOWN_SECONDS=300
 
@@ -97,8 +101,38 @@ date +%s > "$COOLDOWN_FILE"
 jq '. + {"compact_scheduled": true, "compact_time": "'"$(date -Iseconds)"'"}' \
     "$TRIGGER_FILE" > "$TRIGGER_FILE.tmp" && mv "$TRIGGER_FILE.tmp" "$TRIGGER_FILE"
 
-# 8. Run /compact via tmux send-keys (to current pane)
-sleep 1  # Brief wait (for output to be visible)
-tmux send-keys "/compact" Enter
+# 8. Check for Memory Relay mode
+# If Memory Relay is running, use it for session handoff instead of /compact
+RELAY_FIFO=""
+if [ -p "$MEMORY_RELAY_FIFO_LOCAL" ]; then
+    RELAY_FIFO="$MEMORY_RELAY_FIFO_LOCAL"
+elif [ -p "$MEMORY_RELAY_FIFO_GLOBAL" ]; then
+    RELAY_FIFO="$MEMORY_RELAY_FIFO_GLOBAL"
+fi
+
+if [ -n "$RELAY_FIFO" ]; then
+    # Memory Relay mode - trigger context-manager for full relay handoff
+    echo ""
+    echo -e "🔄 Memory Relay detected - initiating session handoff..."
+
+    if [ -x "$PROJECT_ROOT/scripts/context-manager.sh" ]; then
+        "$PROJECT_ROOT/scripts/context-manager.sh" --auto-compact "$LEVEL"
+    else
+        # Fallback: send relay signal directly
+        HANDOFF_FILE="$PROJECT_ROOT/HANDOFF.md"
+        PANE_ID="${TMUX_PANE:-unknown}"
+        echo "RELAY_READY:${HANDOFF_FILE}:${PANE_ID}" > "$RELAY_FIFO"
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "✅ Relay signal sent - new session will start automatically"
+    echo "   You may exit this session when ready"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+else
+    # Standalone mode - use /compact
+    sleep 1  # Brief wait (for output to be visible)
+    tmux send-keys "/compact" Enter
+fi
 
 exit 0

@@ -6,3 +6,4 @@ export * from './shell.js';
 export * from './yaml.js';
 export * from './jsonc.js';
 export * from './fs.js';
+export * from './auto-handoff.js';

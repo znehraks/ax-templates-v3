@@ -6,3 +6,4 @@ export * from './stage.js';
 export * from './status.js';
 export * from './validate.js';
 export * from './checkpoint.js';
+export * from './context.js';

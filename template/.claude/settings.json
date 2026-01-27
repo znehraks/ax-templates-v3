@@ -3,9 +3,9 @@
   "version": "1.2.0",
   "description": "Multi-AI Orchestration Framework",
 
-  "statusline": {
-    "script": ".claude/hooks/statusline.sh",
-    "enabled": true
+  "statusLine": {
+    "type": "command",
+    "command": ".claude/hooks/statusline.sh"
   },
 
   "context_management": {
