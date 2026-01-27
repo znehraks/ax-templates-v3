@@ -1,0 +1,342 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://claude-symphony.dev/schemas/stage_checklist.schema.json",
+  "title": "Stage Checklist Configuration",
+  "description": "Stage-by-stage checklist for mandatory requirements before transition",
+  "type": "object",
+  "required": ["version", "global_settings", "stages"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON schema reference"
+    },
+    "version": {
+      "type": "string",
+      "description": "Configuration version"
+    },
+    "description": {
+      "type": "string",
+      "description": "Configuration description"
+    },
+    "global_settings": {
+      "$ref": "#/definitions/GlobalSettings"
+    },
+    "stages": {
+      "type": "object",
+      "description": "Stage-specific checklist configurations",
+      "additionalProperties": {
+        "$ref": "#/definitions/StageConfig"
+      }
+    },
+    "checklist_categories": {
+      "type": "object",
+      "description": "Category definitions",
+      "additionalProperties": {
+        "$ref": "#/definitions/CategoryConfig"
+      }
+    },
+    "parallel_execution_stages": {
+      "type": "array",
+      "description": "Stages that use parallel AI execution",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cli_output_mapping": {
+      "type": "object",
+      "description": "Mapping of CLI commands to their output files",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "frequently_missed": {
+      "type": "array",
+      "description": "List of frequently missed items",
+      "items": {
+        "$ref": "#/definitions/FrequentlyMissedItem"
+      }
+    }
+  },
+  "definitions": {
+    "GlobalSettings": {
+      "type": "object",
+      "required": ["block_on_failure", "allow_force_override", "require_justification_on_override"],
+      "properties": {
+        "block_on_failure": {
+          "type": "boolean",
+          "description": "Whether to block transition on validation failure"
+        },
+        "allow_force_override": {
+          "type": "boolean",
+          "description": "Whether to allow force override of blocking"
+        },
+        "require_justification_on_override": {
+          "type": "boolean",
+          "description": "Whether to require justification for force override"
+        }
+      }
+    },
+    "StageConfig": {
+      "type": "object",
+      "required": [
+        "description",
+        "ai_model",
+        "required_mcp",
+        "required_cli",
+        "required_inputs",
+        "required_outputs",
+        "git_commit_required",
+        "checkpoint_required"
+      ],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Stage description"
+        },
+        "ai_model": {
+          "$ref": "#/definitions/AIModelConfig"
+        },
+        "required_mcp": {
+          "type": "array",
+          "description": "Required MCP servers",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optional_mcp": {
+          "type": "array",
+          "description": "Optional MCP servers",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fallback_mcp": {
+          "type": "object",
+          "description": "Fallback MCP servers",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required_cli": {
+          "type": "array",
+          "description": "Required CLI commands",
+          "items": {
+            "type": "string"
+          }
+        },
+        "required_inputs": {
+          "type": "array",
+          "description": "Required input files from previous stages",
+          "items": {
+            "type": "string"
+          }
+        },
+        "required_outputs": {
+          "type": "array",
+          "description": "Required output files",
+          "items": {
+            "type": "string"
+          }
+        },
+        "critical_outputs": {
+          "type": "array",
+          "description": "Critical output files (subset of required_outputs)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validation_rules": {
+          "type": "object",
+          "description": "Additional validation rules",
+          "additionalProperties": true
+        },
+        "smoke_tests": {
+          "type": "array",
+          "description": "Smoke tests to run",
+          "items": {
+            "$ref": "#/definitions/TestConfig"
+          }
+        },
+        "regression_tests": {
+          "type": "array",
+          "description": "Regression tests to run",
+          "items": {
+            "$ref": "#/definitions/TestConfig"
+          }
+        },
+        "test_commands": {
+          "type": "array",
+          "description": "Test commands to run",
+          "items": {
+            "$ref": "#/definitions/TestConfig"
+          }
+        },
+        "coverage_requirements": {
+          "$ref": "#/definitions/CoverageRequirements"
+        },
+        "security_checks": {
+          "type": "array",
+          "description": "Security checks to perform",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deployment_checks": {
+          "type": "array",
+          "description": "Deployment checks to perform",
+          "items": {
+            "$ref": "#/definitions/DeploymentCheck"
+          }
+        },
+        "git_commit_required": {
+          "type": "boolean",
+          "description": "Whether git commit is required before transition"
+        },
+        "git_commit_format": {
+          "type": ["string", "null"],
+          "description": "Required git commit message format"
+        },
+        "checkpoint_required": {
+          "type": "boolean",
+          "description": "Whether checkpoint is required before transition"
+        },
+        "checkpoint_trigger": {
+          "type": ["string", "null"],
+          "description": "When to create checkpoint"
+        }
+      }
+    },
+    "AIModelConfig": {
+      "type": "object",
+      "required": ["primary", "execution"],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "description": "Primary AI model",
+          "enum": ["claudecode", "claude", "gemini", "codex"]
+        },
+        "secondary": {
+          "type": ["string", "null"],
+          "description": "Secondary AI model for parallel execution",
+          "enum": ["claudecode", "claude", "gemini", "codex", null]
+        },
+        "execution": {
+          "type": "string",
+          "description": "Execution mode",
+          "enum": ["parallel", "single"]
+        }
+      }
+    },
+    "TestConfig": {
+      "type": "object",
+      "required": ["name", "command", "required"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Test name"
+        },
+        "command": {
+          "type": "string",
+          "description": "Command to execute"
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Command timeout in milliseconds"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether test is required"
+        },
+        "coverage_threshold": {
+          "type": "number",
+          "description": "Coverage threshold percentage"
+        },
+        "description": {
+          "type": "string",
+          "description": "Test description"
+        }
+      }
+    },
+    "CoverageRequirements": {
+      "type": "object",
+      "properties": {
+        "statements": {
+          "type": "number",
+          "description": "Statement coverage threshold"
+        },
+        "branches": {
+          "type": "number",
+          "description": "Branch coverage threshold"
+        },
+        "functions": {
+          "type": "number",
+          "description": "Function coverage threshold"
+        },
+        "lines": {
+          "type": "number",
+          "description": "Line coverage threshold"
+        }
+      }
+    },
+    "DeploymentCheck": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Check name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Check description"
+        }
+      }
+    },
+    "CategoryConfig": {
+      "type": "object",
+      "required": ["description", "icon", "blocking"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Category description"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Category icon/label"
+        },
+        "blocking": {
+          "type": "boolean",
+          "description": "Whether failures in this category block transition"
+        }
+      }
+    },
+    "FrequentlyMissedItem": {
+      "type": "object",
+      "required": ["rank", "issue", "affected_stages", "solution"],
+      "properties": {
+        "rank": {
+          "type": "number",
+          "description": "Ranking of frequency"
+        },
+        "issue": {
+          "type": "string",
+          "description": "Issue description"
+        },
+        "affected_stages": {
+          "type": "array",
+          "description": "Stages affected by this issue",
+          "items": {
+            "type": "string"
+          }
+        },
+        "solution": {
+          "type": "string",
+          "description": "Solution to fix the issue"
+        }
+      }
+    }
+  }
+}

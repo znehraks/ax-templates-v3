@@ -11,6 +11,9 @@ export default defineConfig({
     'hooks/ai-selector': 'src/hooks/ai-selector.ts',
     'hooks/output-validator': 'src/hooks/output-validator.ts',
     'hooks/session-start': 'src/hooks/session-start.ts',
+    // Stage checklist validation hooks
+    'hooks/stage-checklist': 'src/hooks/stage-checklist.ts',
+    'hooks/pre-transition': 'src/hooks/pre-transition.ts',
   },
   format: ['esm'],
   target: 'node20',
