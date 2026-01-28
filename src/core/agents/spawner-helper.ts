@@ -8,8 +8,8 @@
  */
 
 import { AgentRegistry } from './registry.js';
-import type { AgentContext, AgentResult } from './types.js';
-import { logInfo, logWarning } from '../../utils/logger.js';
+import type { AgentContext } from './types.js';
+import { logWarning } from '../../utils/logger.js';
 
 /**
  * Build agent prompt with context injection

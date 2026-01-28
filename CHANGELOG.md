@@ -5,11 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 2026-01-28
 
-### Phase 3 Complete: All Tier 1 Sub-Agents Implemented ✅
+### Phase 3 Complete: All Tier 1 Sub-Agents Implemented
 
-**Date**: 2026-01-28
 **Status**: 100% Complete (5/5 Tier 1 agents tested and working)
 
 ### Added
@@ -125,19 +124,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Template directory structure
 - CLI initialization command
 
-## Future Work (v1.0.0)
+## Future Work (v1.1+)
 
-### Planned for Release
+### Planned for v1.1
 - [ ] Automated integration tests (requires Task tool mocking)
 - [ ] Performance regression tests
 - [ ] Fallback mechanism testing
 - [ ] E2E pipeline tests
 - [ ] User guide for sub-agents
 - [ ] Troubleshooting guide
-- [ ] Architecture documentation updates
-- [ ] npm publish v1.0.0
 
-### Deferred to v1.1+
+### Deferred to v1.2+
 - Tier 2 agents (implementation, refactoring, testing)
 - Tier 3 agents (documentation, collaboration)
 - Web dashboard for visualization
@@ -146,6 +143,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**Phase 3 Status**: 100% Complete ✅
-**Next Phase**: Integration Tests & v1.0.0 Release
-**Release Target**: Q1 2026
+**v1.0.0 Released**: 2026-01-28
+**Next Target**: v1.1.0 - Integration Tests & E2E
