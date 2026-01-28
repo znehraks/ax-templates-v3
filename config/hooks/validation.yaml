@@ -1,0 +1,149 @@
+# Validation Hook Configuration
+
+enabled: true
+use_agent: true  # Set to false for legacy validation
+
+# Agent configuration
+agent:
+  model: sonnet
+  extended_thinking: true
+  timeout_seconds: 120
+  mode: foreground
+
+# Validation rules by stage
+stages:
+  "01-brainstorm":
+    required_files:
+      - path: stages/01-brainstorm/outputs/ideas.md
+        min_size: 1000
+        min_ideas: 5
+    quality_threshold: 0.7
+
+  "02-research":
+    required_files:
+      - path: stages/02-research/outputs/tech_research.md
+        min_size: 2000
+      - path: stages/02-research/outputs/market_analysis.md
+        min_size: 1500
+    quality_threshold: 0.8
+
+  "03-planning":
+    required_files:
+      - path: stages/03-planning/outputs/architecture.md
+        min_size: 3000
+        required_sections: [Overview, Components, Data Flow, Tech Stack]
+      - path: stages/03-planning/outputs/implementation.yaml
+        format: yaml
+        required_keys: [tasks, milestones, dependencies]
+    quality_threshold: 0.85
+
+  "04-ui-ux":
+    required_files:
+      - path: stages/04-ui-ux/outputs/wireframes.md
+        min_size: 2000
+      - path: stages/04-ui-ux/outputs/design_tokens.json
+        format: json
+    quality_threshold: 0.8
+
+  "05-task-management":
+    required_files:
+      - path: stages/05-task-management/outputs/tasks.json
+        format: json
+        min_tasks: 10
+    quality_threshold: 0.8
+
+  "06-implementation":
+    required_files:
+      - path: stages/06-implementation/outputs/source_code/
+        type: directory
+      - path: stages/06-implementation/outputs/implementation_log.md
+        min_size: 1000
+    commands:
+      - name: lint
+        command: "npm run lint"
+        working_dir: "{{PROJECT_ROOT}}"
+      - name: typecheck
+        command: "npm run typecheck"
+        working_dir: "{{PROJECT_ROOT}}"
+    quality_threshold: 0.9
+
+  "07-refactoring":
+    required_files:
+      - path: stages/07-refactoring/outputs/refactoring_report.md
+        min_size: 2000
+    commands:
+      - name: lint
+        command: "npm run lint"
+      - name: test
+        command: "npm run test"
+    quality_threshold: 0.85
+
+  "08-qa":
+    required_files:
+      - path: stages/08-qa/outputs/security_report.md
+        min_size: 2000
+      - path: stages/08-qa/outputs/bug_report.md
+        min_size: 1000
+    quality_threshold: 0.9
+
+  "09-testing":
+    required_files:
+      - path: stages/09-testing/outputs/tests/
+        type: directory
+        min_files: 5
+    commands:
+      - name: test
+        command: "npm run test"
+      - name: coverage
+        command: "npm run test:coverage"
+        min_coverage: 80
+    quality_threshold: 0.85
+
+  "10-deployment":
+    required_files:
+      - path: stages/10-deployment/outputs/.github/workflows/
+        type: directory
+        min_files: 1
+      - path: stages/10-deployment/outputs/deployment_log.md
+        min_size: 1000
+    quality_threshold: 0.8
+
+# Blocking behavior
+blocking:
+  enabled: true
+  minimum_score: 0.6  # Below this score, block transition
+  allow_force: true  # Allow --force flag to bypass
+  force_requires_reason: true
+
+# Fallback strategy
+fallback:
+  enabled: true
+  strategy: basic_file_check  # Check file existence and size only
+  log_fallback: true
+
+# Auto-fix suggestions
+auto_fix:
+  enabled: true
+  generate_suggestions: true
+  apply_automatically: false  # Require user confirmation
+
+# Report generation
+reports:
+  enabled: true
+  location: state/validations/
+  format: json
+  include_markdown: true
+  retention_days: 90
+
+# Error handling
+error_handling:
+  retry_attempts: 2
+  retry_delay_seconds: 5
+  log_errors: true
+  log_location: state/hooks/validation_errors.log
+
+# Performance monitoring
+monitoring:
+  enabled: true
+  track_metrics: [duration_ms, checks_performed, pass_rate]
+  log_location: state/hooks/validation_metrics.json

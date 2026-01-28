@@ -1,0 +1,73 @@
+# Stage Transition Hook Configuration
+
+enabled: true
+
+# Agents to trigger on stage transition
+agents:
+  handoff_generator:
+    enabled: true
+    mode: foreground
+    model: sonnet
+    timeout_seconds: 120
+    fallback: bash_script
+
+  output_synthesis:
+    enabled: true
+    mode: foreground
+    model: sonnet
+    timeout_seconds: 120
+    # Only trigger for parallel-capable stages
+    stages: [01-brainstorm, 03-planning, 04-ui-ux, 07-refactoring, 09-testing]
+    fallback: skip  # Skip synthesis if agent fails
+
+  validation:
+    enabled: true
+    mode: foreground
+    model: sonnet
+    timeout_seconds: 120
+    # Validate outputs before allowing transition
+    blocking: true
+    minimum_score: 0.6
+    fallback: basic_check
+
+# HANDOFF generation options
+handoff:
+  # Template selection
+  template: default  # default, compact, recovery, epic_transition
+
+  # Auto-select template based on context
+  auto_template: true
+  auto_rules:
+    - condition: "epic_cycle_boundary"
+      template: epic_transition
+    - condition: "context_below_40"
+      template: recovery
+    - condition: "stage_in [01, 02, 03]"
+      template: default
+    - condition: "default"
+      template: compact
+
+  # Compression settings
+  compression:
+    enabled: true
+    target_tokens: 4000
+    preserve_critical: true
+
+  # Archive settings
+  archive:
+    enabled: true
+    location: state/handoffs/archive/
+    retention_days: 90
+
+# Error handling
+error_handling:
+  retry_attempts: 2
+  retry_delay_seconds: 5
+  log_errors: true
+  log_location: state/hooks/stage_transition_errors.log
+
+# Performance monitoring
+monitoring:
+  enabled: true
+  track_metrics: [duration_ms, agent_success_rate, context_saved]
+  log_location: state/hooks/stage_transition_metrics.json

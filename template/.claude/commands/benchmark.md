@@ -1,6 +1,6 @@
 # /benchmark - AI Model Benchmarking Command
 
-Compare AI model performance and select the optimal model.
+Compare AI model performance and select the optimal model using the benchmark-analyzer-agent.
 
 ## Usage
 
@@ -15,8 +15,17 @@ Compare AI model performance and select the optimal model.
 | `--task` | Task type to benchmark | code_generation |
 | `--models` | Models to compare (comma-separated) | claude,codex |
 | `--samples` | Number of sample tasks | 3 |
-| `--metrics` | Metrics to measure | correctness,performance |
-| `--verbose` | Verbose output | false |
+| `--verbose` | Show detailed analysis and trends | false |
+| `--legacy` | Use legacy bash script (fallback) | false |
+
+## How It Works
+
+1. **Spawn benchmark-analyzer-agent** - Agent runs in isolated context
+2. **Generate Sample Tasks** - Create representative sample tasks for the benchmark type
+3. **Execute Benchmarks** - Run each model on samples, measure metrics
+4. **Calculate Scores** - Weighted scoring (correctness 40%, performance 20%, style 20%, readability 20%)
+5. **Analyze Trends** - Compare with 7-day historical data
+6. **Generate Recommendation** - Recommend best model with confidence level
 
 ## Benchmark Task Types
 

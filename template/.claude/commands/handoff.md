@@ -1,39 +1,41 @@
 # /handoff
 
-Generate the HANDOFF.md document for the current stage.
+Generate the HANDOFF.md document for the current stage using the handoff-generator-agent.
 
 ## Usage
 ```
-/handoff
+/handoff [options]
 ```
 
-## Actions
+## Options
 
-1. **Check Current Stage**
-   - Query current stage from `state/progress.json`
+| Option | Description |
+|--------|-------------|
+| `--compact` | Generate compact HANDOFF (minimum essential info) |
+| `--recovery` | Generate detailed recovery HANDOFF |
+| `--epic-transition` | Generate HANDOFF for epic cycle transition |
+| `--legacy` | Use legacy bash script (fallback) |
 
-2. **Verify Completion Criteria**
-   - Check completion.checklist in stage config.yaml
-   - Verify required output files exist
+## How It Works
 
-3. **Generate HANDOFF.md**
-   - Generate based on `HANDOFF.md.template`
-   - Variable substitution (timestamp, deliverables, etc.)
-   - Get user input (key decisions, etc.)
+1. **Spawn handoff-generator-agent** - Agent runs in isolated context
+2. **Extract Content** - Parse conversation history and extract key items
+3. **Compress** - Apply compression strategy (target 4000 tokens)
+4. **Generate HANDOFF.md** - Create document with selected template
+5. **Save & Archive** - Save to stage directory and archive
 
-4. **Update State**
-   - Mark handoff complete in `state/progress.json`
-   - Save copy to `state/handoffs/` directory
+## Agent-Based Generation
 
-5. **Next Stage Guidance**
-   - Display next stage information
-   - Guide `/run-stage [next]` command
+By default, this command uses the **handoff-generator-agent** which:
+- Extracts decisions, file changes, issues from conversation history
+- Prioritizes content (blocking issues > decisions > tasks)
+- Compresses content to fit target token budget
+- Applies conditional sections based on stage context
+- Uses extended thinking for complex analysis
 
-## Execution Script
+## Fallback
 
-```bash
-scripts/create-handoff.sh
-```
+If agent fails, automatically falls back to legacy bash script.
 
 ## Example
 

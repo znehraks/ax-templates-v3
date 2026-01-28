@@ -1,0 +1,95 @@
+# Auto-Checkpoint Hook Configuration
+
+enabled: true
+
+# Trigger conditions
+triggers:
+  task_count:
+    enabled: true
+    threshold: 5
+    priority: medium
+
+  file_changes:
+    enabled: true
+    threshold: 100  # lines changed
+    priority: medium
+
+  time_elapsed:
+    enabled: true
+    threshold_minutes: 30
+    priority: low
+
+  destructive_ops:
+    enabled: true
+    priority: critical
+    patterns:
+      - "rm -rf"
+      - "DROP TABLE"
+      - "DELETE FROM"
+      - "TRUNCATE"
+      - "git reset --hard"
+      - "git clean -f"
+
+  stage_completion:
+    enabled: true
+    priority: high
+
+# Agent configuration
+agent:
+  mode: background  # Non-blocking execution
+  model: haiku  # Lightweight model for speed
+  timeout_seconds: 60
+
+# Checkpoint settings
+checkpoint:
+  # Retention policy
+  retention:
+    max_checkpoints: 20
+    preserve_milestones: true  # Stage completion checkpoints never deleted
+    cleanup_strategy: oldest_first  # or: least_used, smallest_size
+
+  # Archive format
+  archive:
+    format: tar.gz
+    compression_level: 6  # 1-9 (higher = smaller but slower)
+    include_git: true  # Include .git directory
+    exclude_patterns:
+      - node_modules/
+      - dist/
+      - .next/
+      - build/
+      - coverage/
+
+  # Git integration
+  git:
+    create_tag: true
+    tag_prefix: checkpoint_
+    commit_message: "chore: auto-checkpoint {trigger} at {timestamp}"
+
+# Metadata tracking
+metadata:
+  enabled: true
+  location: state/checkpoints/metadata.json
+  track_fields:
+    - id
+    - timestamp
+    - stage
+    - trigger
+    - risk_score
+    - files_changed
+    - lines_changed
+    - tasks_completed
+    - git_tag
+    - git_commit
+
+# Error handling
+error_handling:
+  log_errors: true
+  log_location: state/hooks/checkpoint_errors.log
+  on_error: continue  # continue, retry, abort
+
+# Performance monitoring
+monitoring:
+  enabled: true
+  track_metrics: [duration_ms, archive_size_kb, success_rate]
+  log_location: state/hooks/checkpoint_metrics.json
