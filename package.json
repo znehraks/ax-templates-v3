@@ -1,6 +1,6 @@
 {
   "name": "claude-symphony",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "Multi-AI Orchestration Framework - Create new projects with 10-stage development workflow",
   "type": "module",
   "bin": {
@@ -56,7 +56,6 @@
   },
   "homepage": "https://github.com/znehraks/claude-symphony#readme",
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.21",
     "@inquirer/prompts": "^7.10.1",
     "chalk": "^5.4.1",
     "commander": "^13.1.0",

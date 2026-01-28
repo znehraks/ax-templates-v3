@@ -41,6 +41,45 @@
 | `schemas/*.json` | Config 스키마 |
 | `tsup.config.ts` | 빌드 설정 |
 
+## Agent 아키텍처 (v0.2.14+)
+
+**Task Tool 기반 구현** - Agent SDK에서 Claude Code native Task tool로 마이그레이션
+
+### 구조
+
+```
+src/core/agents/
+├── task-spawner.ts   # Task Tool wrapper (~154 lines)
+├── registry.ts       # Agent 정의 로더 (168 lines)
+├── types.ts          # Type definitions (93 lines)
+└── index.ts          # Public exports
+```
+
+### 주요 변경사항
+
+| 변경 | Before (SDK) | After (Task Tool) |
+|------|--------------|-------------------|
+| 코드량 | 266 lines (sdk.ts) | 154 lines (task-spawner.ts) |
+| 의존성 | @anthropic-ai/claude-agent-sdk | 없음 (zero dependency) |
+| 통합 | SDK wrapper | Claude Code native |
+| 유지보수 | SDK 업데이트 필요 | Claude Code와 함께 진화 |
+
+### 사용 예시
+
+```typescript
+import { spawnAgent } from '../core/agents/index.js';
+
+const result = await spawnAgent(
+  'validation-agent',
+  {
+    projectRoot: '/path/to/project',
+    stage: '01-brainstorm',
+    data: { validationRules: {...} },
+  },
+  'foreground'
+);
+```
+
 ## MCP 서버 연동
 
 ### 사용 가능한 MCP 서버

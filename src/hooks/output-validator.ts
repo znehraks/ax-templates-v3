@@ -13,7 +13,7 @@ import { execShell } from '../utils/shell.js';
 import type { StageId } from '../types/stage.js';
 import { STAGE_IDS } from '../types/stage.js';
 import type { Progress } from '../types/state.js';
-import { AgentSDK } from '../core/agents/index.js';
+import { spawnAgent } from '../core/agents/index.js';
 
 /**
  * Validation check result
@@ -319,13 +319,11 @@ async function runValidationWithAgent(
 ): Promise<ValidationSummary> {
   logInfo('Using Validation Agent for output validation');
 
-  const agentSDK = new AgentSDK(projectRoot);
-
   // Get validation rules for this stage
   const validationRules = getValidationRulesForStage(stageId);
 
-  // Spawn validation agent
-  const result = await agentSDK.spawnAgent(
+  // Spawn validation agent using Task Tool
+  const result = await spawnAgent(
     'validation-agent',
     {
       projectRoot,

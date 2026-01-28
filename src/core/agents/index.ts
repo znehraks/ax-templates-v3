@@ -1,9 +1,9 @@
 /**
- * Agent SDK Module
- * Sub-agent spawning and management
+ * Agent Module
+ * Sub-agent spawning and management using Task Tool
  */
 
-export { AgentSDK } from './sdk.js';
+export { spawnAgent } from './task-spawner.js';
 export { AgentRegistry } from './registry.js';
 export type {
   AgentDefinition,
