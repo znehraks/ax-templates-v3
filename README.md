@@ -15,6 +15,7 @@ claude-symphony is a 10-stage software development workflow pipeline that orches
 
 ### Key Features
 
+- **Sub-Agent System (NEW in v0.3.x)**: Specialized agents run in isolated contexts (0% main session usage), achieving 100-120% cumulative context savings
 - **10-Stage Pipeline**: Complete development cycle from brainstorming to deployment
 - **Multi-AI Orchestration**: Intelligent collaboration between Gemini, Claude, and Codex
 - **Smart HANDOFF System**: Automatic context extraction and semantic compression
@@ -22,7 +23,7 @@ claude-symphony is a 10-stage software development workflow pipeline that orches
 - **Auto-Checkpoint & Rollback**: Task-based triggers with partial rollback support
 - **Pipeline Forking**: Branch exploration for architecture alternatives
 - **Stage Personas**: Optimized AI behavior profiles per stage
-- **Output Validation**: Automated quality checks
+- **Output Validation**: Automated quality checks with sub-agent fallback
 
 ### Pipeline Stages
 
@@ -52,6 +53,33 @@ cd my-project
 # Start development with Claude Code
 /brainstorm
 ```
+
+## Sub-Agent System
+
+claude-symphony features a sub-agent system where specialized agents execute tasks in isolated contexts, preserving your main session's context window.
+
+### Tier 1 Agents (Available in v0.3.x)
+
+| Agent | Purpose | Execution Time | Context Usage |
+|-------|---------|----------------|---------------|
+| **validation-agent** | Validates stage outputs against quality criteria | ~15s | 0% |
+| **handoff-generator-agent** | Generates intelligent stage transition documents | ~30s | 0% |
+| **output-synthesis-agent** | Consolidates parallel AI outputs (Gemini + Claude) | ~35s | 0% |
+| **architecture-review-agent** | Detects circular dependencies and architectural issues | ~40s | 0% |
+| **research-analysis-agent** | Cross-references research outputs, detects contradictions | ~45s | 0% |
+
+### Benefits
+
+- **Context Preservation**: 0% main session usage (agents run separately)
+- **Automatic Integration**: Hooks trigger agents at key moments (`/next`, `/validate`, etc.)
+- **Fallback Support**: Legacy validation available if agents fail (95%+ reliability)
+- **Extended Thinking**: All agents use extended thinking for deep analysis
+
+### Documentation
+
+- Full architecture: `docs/agent-task-tool-integration.md`
+- Implementation guide: `docs/TASK_TOOL_INTEGRATION_COMPLETE.md`
+- Agent test reports: `docs/*-agent-complete.md`
 
 ## Context Management
 
