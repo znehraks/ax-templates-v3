@@ -74,23 +74,7 @@ The statusline hook monitors context usage every 300ms. When thresholds are reac
 # List all snapshots
 /context --list
 
-# Trigger relay manually (requires tmux)
-/context --relay
 ```
-
-### Encore Mode (Memory Relay)
-
-For infinite session orchestration, start with Memory Relay:
-
-```bash
-# Start Encore Mode
-claude-symphony-play
-
-# With auto-bypass (skip permission prompts)
-claude-symphony-play --auto
-```
-
-When context drops below 50%, the system automatically starts a new Claude session that continues from where you left off.
 
 ## Documentation
 

@@ -9,7 +9,6 @@ Scripts organized by usage category.
 | `dev/` | Development | Framework build and maintenance |
 | `test/` | Testing | Framework validation and CI/CD |
 | `user/` | End-User | Project runtime and operations |
-| `memory-relay/` | End-User | Session orchestration |
 
 ## Usage
 
@@ -69,18 +68,6 @@ npm run rollback -- --list
 
 # Rollback to checkpoint
 npm run rollback -- --checkpoint <id>
-```
-
-### Memory Relay (Session Orchestration)
-
-Used for multi-AI session orchestration.
-
-```bash
-# Install memory relay
-./scripts/memory-relay/install.sh
-
-# Start orchestration session
-claude-symphony-play
 ```
 
 ## Script Help

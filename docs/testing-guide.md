@@ -427,23 +427,6 @@ cat state/loopback_history.json
 /next  # Progress through stages again
 ```
 
-### F. Memory Relay (Multi-Session)
-
-```bash
-# Start Memory Relay
-claude-symphony-play
-
-# Check tmux sessions
-tmux ls
-# Expected: symphony-relay, symphony-claude-1, symphony-claude-2
-
-# Session handoff
-# In Session 1:
-/handoff --relay
-# In Session 2:
-/resume --from-relay
-```
-
 ---
 
 ## Troubleshooting
@@ -454,7 +437,7 @@ tmux ls
 |-------|---------|----------|
 | MCP not found | "MCP server not connected" | Run `claude mcp list` and verify server |
 | Stitch quota | "Quota exhausted" | Check `/stitch quota`, use Figma fallback |
-| Tmux session | "Session not found" | Run `tmux ls`, restart with `claude-symphony-play` |
+| Tmux session | "Session not found" | Run `tmux ls` to check session status |
 | Synthesis fails | Score < 0.8 | Use `/synthesize --force` or re-run parallel |
 | Sprint blocked | Test gates fail | Fix tests, then `/sprint complete` |
 | HANDOFF missing | Stage transition fails | Run `/handoff` manually |

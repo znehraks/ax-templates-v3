@@ -22,8 +22,9 @@ claude-symphony/
 
 The CLI is built with Commander.js and provides:
 - `claude-symphony init` - Project initialization
-- `claude-symphony play` - Encore Mode session management
 - `claude-symphony status` - Pipeline status
+- `claude-symphony next` - Stage transitions
+- `claude-symphony checkpoint` - State checkpointing
 
 ### 2. Template (`template/`)
 
@@ -69,12 +70,6 @@ JSON Schema files for config validation:
 #### `scripts/dev/` - Development Scripts
 - `build-schema.ts` - Generate JSON schemas from Zod types
 - `migrate-yaml-to-jsonc.ts` - Config format migration
-
-#### `scripts/memory-relay/` - Encore Mode
-Session orchestration system:
-- `orchestrator.sh` - Main orchestration logic
-- `claude-wrapper.sh` - Claude session management
-- `fifo-reader.sh` - Inter-process communication
 
 #### `scripts/user/` - End-User Scripts
 - `validate-env.ts` - Environment validation

@@ -1038,14 +1038,14 @@ export async function createProject(
   log('Next steps:', 'yellow');
   if (projectName !== '.') {
     console.log(chalk.gray('  1. ') + chalk.cyan(`cd ${projectName}`));
-    console.log(chalk.gray('  2. ') + chalk.cyan('claude-symphony play'));
+    console.log(chalk.gray('  2. ') + chalk.cyan('claude'));
   } else {
-    console.log(chalk.gray('  → ') + chalk.cyan('claude-symphony play'));
+    console.log(chalk.gray('  → ') + chalk.cyan('claude'));
   }
   console.log('');
 
-  // Bypass mode hint
+  // Tip
   log('Tip:', 'blue');
-  console.log(chalk.gray('  Use ') + chalk.cyan('claude-symphony play --auto') + chalk.gray(' to skip all permission prompts (bypass mode)'));
+  console.log(chalk.gray('  Start with ') + chalk.cyan('/brainstorm') + chalk.gray(' to begin your project'));
   console.log('');
 }

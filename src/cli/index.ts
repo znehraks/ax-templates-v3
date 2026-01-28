@@ -8,7 +8,6 @@ import path from 'path';
 import { Command } from 'commander';
 import { createProject } from './commands/create.js';
 import { runStage, nextStage, gotoStage, listStages } from './commands/stage.js';
-import { playCommand, playStatus, playLogs } from './commands/play.js';
 import { showStatus, showDashboard } from './commands/status.js';
 import { validateConfig } from './commands/validate.js';
 import {
@@ -202,37 +201,6 @@ program
     const projectRoot = process.cwd();
     const maxRetention = parseInt(options.max, 10);
     await cleanupCheckpointsCommand(projectRoot, maxRetention);
-  });
-
-// play command
-program
-  .command('play')
-  .description('Start Claude with Encore Mode (automatic session handoff)')
-  .option('-d, --directory <dir>', 'Working directory', process.cwd())
-  .option('--dangerously-skip-permissions, --auto', 'Start Claude in bypass mode (skip all permission prompts)')
-  .action(async (options: { directory: string; dangerouslySkipPermissions?: boolean; auto?: boolean }) => {
-    // Commander sets 'auto' when --auto is used, normalize to dangerouslySkipPermissions
-    if (options.auto) {
-      options.dangerouslySkipPermissions = true;
-    }
-    await playCommand(options);
-  });
-
-// play:status command
-program
-  .command('play:status')
-  .description('Show Memory Relay Context Manager status')
-  .action(async () => {
-    await playStatus();
-  });
-
-// play:logs command
-program
-  .command('play:logs')
-  .description('View Memory Relay logs')
-  .option('-f, --follow', 'Follow logs in real-time')
-  .action(async (options: { follow?: boolean }) => {
-    await playLogs(options);
   });
 
 program.parse();
