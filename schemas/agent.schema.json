@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://claude-symphony.dev/schemas/agent.schema.json",
+  "title": "Agent Configuration",
+  "description": "Sub-agent definition for specialized tasks",
+  "$ref": "#/definitions/Agent Configuration",
+  "definitions": {
+    "Agent Configuration": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Agent name (should match directory name)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the agent's purpose"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Allowed tools (if undefined, inherits all tools)"
+        },
+        "model": {
+          "type": "string",
+          "enum": [
+            "sonnet",
+            "opus",
+            "haiku",
+            "inherit"
+          ],
+          "description": "Model to use (sonnet, opus, haiku, inherit)"
+        },
+        "permissionMode": {
+          "type": "string",
+          "enum": [
+            "default",
+            "acceptEdits",
+            "bypassPermissions",
+            "plan"
+          ],
+          "description": "Permission mode for tool execution"
+        },
+        "extendedThinking": {
+          "type": "boolean",
+          "description": "Enable extended thinking (increases quality, 2-3x cost)"
+        },
+        "sessionPersistence": {
+          "type": "boolean",
+          "description": "Enable session persistence across invocations"
+        },
+        "mcpServers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "MCP server names to enable (e.g., serena, context7, playwright)"
+        },
+        "executionMode": {
+          "type": "string",
+          "enum": [
+            "foreground",
+            "background"
+          ],
+          "description": "Execution mode (foreground blocks, background runs async)"
+        }
+      },
+      "required": [
+        "name",
+        "description"
+      ],
+      "additionalProperties": false,
+      "description": "Agent configuration"
+    }
+  }
+}

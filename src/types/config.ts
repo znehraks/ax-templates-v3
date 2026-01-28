@@ -223,3 +223,21 @@ export const OutputValidationConfigSchema = z.object({
 }).describe('Output validation configuration');
 
 export type OutputValidationConfig = z.infer<typeof OutputValidationConfigSchema>;
+
+/**
+ * Agent definition schema (agent.json)
+ */
+export const AgentConfigSchema = z.object({
+  name: z.string().describe('Agent name (should match directory name)'),
+  description: z.string().describe('Human-readable description of the agent\'s purpose'),
+  tools: z.array(z.string()).optional().describe('Allowed tools (if undefined, inherits all tools)'),
+  model: z.enum(['sonnet', 'opus', 'haiku', 'inherit']).optional().describe('Model to use (sonnet, opus, haiku, inherit)'),
+  permissionMode: z.enum(['default', 'acceptEdits', 'bypassPermissions', 'plan']).optional()
+    .describe('Permission mode for tool execution'),
+  extendedThinking: z.boolean().optional().describe('Enable extended thinking (increases quality, 2-3x cost)'),
+  sessionPersistence: z.boolean().optional().describe('Enable session persistence across invocations'),
+  mcpServers: z.array(z.string()).optional().describe('MCP server names to enable (e.g., serena, context7, playwright)'),
+  executionMode: z.enum(['foreground', 'background']).optional().describe('Execution mode (foreground blocks, background runs async)'),
+}).describe('Agent configuration');
+
+export type AgentConfig = z.infer<typeof AgentConfigSchema>;

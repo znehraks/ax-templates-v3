@@ -10,6 +10,7 @@
     "auto_checkpoint": "./auto_checkpoint.schema.json",
     "git": "./git.schema.json",
     "output_validation": "./output_validation.schema.json",
-    "tech_stack": "./tech_stack.schema.json"
+    "tech_stack": "./tech_stack.schema.json",
+    "agent": "./agent.schema.json"
   }
 }

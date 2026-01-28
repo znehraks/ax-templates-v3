@@ -2,6 +2,8 @@
  * Output Validator hook logic
  * Stage output validation
  * Migrated from .claude/hooks/output-validator.sh
+ *
+ * Now supports both legacy validation and Agent SDK-based validation
  */
 import path from 'path';
 import { existsSync, statSync, readFileSync } from 'fs';
@@ -11,6 +13,7 @@ import { execShell } from '../utils/shell.js';
 import type { StageId } from '../types/stage.js';
 import { STAGE_IDS } from '../types/stage.js';
 import type { Progress } from '../types/state.js';
+import { AgentSDK } from '../core/agents/index.js';
 
 /**
  * Validation check result
@@ -308,29 +311,172 @@ async function getCurrentStage(projectRoot: string): Promise<StageId | null> {
 }
 
 /**
- * Run output validation
+ * Run output validation using Validation Agent (new method)
  */
-export async function runOutputValidation(
+async function runValidationWithAgent(
   projectRoot: string,
-  stageId?: StageId
+  stageId: StageId
 ): Promise<ValidationSummary> {
-  const stage = stageId || (await getCurrentStage(projectRoot));
+  logInfo('Using Validation Agent for output validation');
 
-  if (!stage) {
-    throw new Error('Cannot determine current stage');
+  const agentSDK = new AgentSDK(projectRoot);
+
+  // Get validation rules for this stage
+  const validationRules = getValidationRulesForStage(stageId);
+
+  // Spawn validation agent
+  const result = await agentSDK.spawnAgent(
+    'validation-agent',
+    {
+      projectRoot,
+      stage: stageId as string,
+      data: { validationRules },
+    },
+    'foreground'
+  );
+
+  if (!result.success || !result.result) {
+    // Agent failed - fallback to legacy validation
+    logWarning('Validation agent failed, falling back to legacy validation');
+    return runLegacyValidation(projectRoot, stageId);
   }
 
+  // Parse agent result (expects JSON ValidationSummary)
+  try {
+    if (!result.result) {
+      throw new Error('Agent returned empty result');
+    }
+
+    // Extract JSON from agent result (may contain markdown formatting)
+    const jsonMatch = result.result.match(/```json\n([\s\S]*?)\n```/);
+    const jsonStr: string = jsonMatch && jsonMatch[1] ? jsonMatch[1] : result.result;
+    const summary = JSON.parse(jsonStr) as ValidationSummary;
+
+    // Ensure stage is set correctly (stageId is never undefined at this point due to earlier check)
+    summary.stage = stageId;
+
+    // Save results
+    const validationsDir = path.join(projectRoot, 'state', 'validations');
+    await ensureDirAsync(validationsDir);
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    await writeJson(path.join(validationsDir, `${stageId}_${timestamp}.json`), summary);
+
+    // Print summary
+    printValidationSummary(summary);
+
+    return summary;
+  } catch (error) {
+    logError(`Failed to parse agent result: ${error}`);
+    logInfo('Agent result was:\n' + result.result);
+    // Fallback to legacy validation
+    return runLegacyValidation(projectRoot, stageId);
+  }
+}
+
+/**
+ * Get validation rules for a stage
+ */
+function getValidationRulesForStage(stageId: StageId): Record<string, any> {
+  // Map stage ID to validation rules
+  const rules: Record<StageId, any> = {
+    '01-brainstorm': {
+      files: [
+        { path: 'stages/01-brainstorm/outputs/ideas.md', required: true, minSize: 500 },
+        { path: 'stages/01-brainstorm/outputs/requirements_analysis.md', required: true, sections: ['Functional', 'Non-functional'] },
+      ],
+    },
+    '02-research': {
+      files: [
+        { path: 'stages/02-research/outputs/tech_research.md', required: true, minSize: 2000 },
+        { path: 'stages/02-research/outputs/feasibility_report.md', required: true },
+      ],
+    },
+    '03-planning': {
+      files: [
+        { path: 'stages/03-planning/outputs/architecture.md', required: true },
+        { path: 'stages/03-planning/outputs/tech_stack.md', required: true },
+        { path: 'stages/03-planning/outputs/project_plan.md', required: true },
+      ],
+    },
+    '04-ui-ux': {
+      files: [
+        { path: 'stages/04-ui-ux/outputs/wireframes.md', required: true },
+        { path: 'stages/04-ui-ux/outputs/design_system.md', required: false },
+      ],
+    },
+    '05-task-management': {
+      files: [
+        { path: 'stages/05-task-management/outputs/tasks.md', required: true },
+      ],
+    },
+    '06-implementation': {
+      directories: [
+        { path: 'stages/06-implementation/outputs/source_code', required: true },
+      ],
+      files: [
+        { path: 'stages/06-implementation/outputs/implementation_log.md', required: true },
+      ],
+      commands: [
+        { name: 'lint', command: 'npm run lint', required: true },
+        { name: 'typecheck', command: 'npm run typecheck', required: true },
+      ],
+    },
+    '07-refactoring': {
+      directories: [
+        { path: 'stages/07-refactoring/outputs/refactored_code', required: false },
+      ],
+      files: [
+        { path: 'stages/07-refactoring/outputs/refactoring_report.md', required: true },
+      ],
+    },
+    '08-qa': {
+      files: [
+        { path: 'stages/08-qa/outputs/qa_report.md', required: true },
+        { path: 'stages/08-qa/outputs/bug_list.md', required: false },
+      ],
+    },
+    '09-testing': {
+      directories: [
+        { path: 'stages/09-testing/outputs/tests', required: true },
+      ],
+      files: [
+        { path: 'stages/09-testing/outputs/test_report.md', required: true },
+        { path: 'stages/09-testing/outputs/coverage_report.md', required: true },
+      ],
+      commands: [
+        { name: 'test', command: 'npm run test', required: true },
+      ],
+    },
+    '10-deployment': {
+      files: [
+        { path: 'stages/10-deployment/outputs/deployment_guide.md', required: true },
+        { path: 'stages/10-deployment/outputs/ci_config.yaml', required: false },
+      ],
+    },
+  };
+
+  return rules[stageId] || {};
+}
+
+/**
+ * Run legacy validation (original implementation)
+ */
+async function runLegacyValidation(
+  projectRoot: string,
+  stageId: StageId
+): Promise<ValidationSummary> {
   console.log('');
   console.log('==========================================');
-  console.log(`  Output Validation: ${stage}`);
+  console.log(`  Output Validation (Legacy): ${stageId}`);
   console.log('==========================================');
   console.log('');
 
   const state = new ValidationState();
-  await validateStageOutputs(state, projectRoot, stage);
+  await validateStageOutputs(state, projectRoot, stageId);
 
   const summary: ValidationSummary = {
-    stage,
+    stage: stageId,
     timestamp: new Date().toISOString(),
     totalChecks: state.totalChecks,
     passed: state.passed,
@@ -345,9 +491,18 @@ export async function runOutputValidation(
   await ensureDirAsync(validationsDir);
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  await writeJson(path.join(validationsDir, `${stage}_${timestamp}.json`), summary);
+  await writeJson(path.join(validationsDir, `${stageId}_${timestamp}.json`), summary);
 
   // Print summary
+  printValidationSummary(summary);
+
+  return summary;
+}
+
+/**
+ * Print validation summary to console
+ */
+function printValidationSummary(summary: ValidationSummary): void {
   console.log('');
   console.log('==========================================');
   console.log('  Validation Result Summary');
@@ -365,8 +520,43 @@ export async function runOutputValidation(
   } else {
     logError('Validation failed - Stage transition blocked');
   }
+}
 
-  return summary;
+/**
+ * Run output validation (public API)
+ * Supports both agent-based and legacy validation
+ */
+export async function runOutputValidation(
+  projectRoot: string,
+  stageId?: StageId,
+  useAgent: boolean = true
+): Promise<ValidationSummary> {
+  const stage = stageId || (await getCurrentStage(projectRoot));
+
+  if (!stage) {
+    throw new Error('Cannot determine current stage');
+  }
+
+  console.log('');
+  console.log('==========================================');
+  console.log(`  Output Validation: ${stage}`);
+  console.log('==========================================');
+  console.log('');
+
+  // Check if validation agent exists
+  const agentDir = path.join(projectRoot, 'template', '.claude', 'agents', 'validation-agent');
+  const agentExists = existsSync(agentDir);
+
+  if (useAgent && agentExists) {
+    // Use agent-based validation
+    return runValidationWithAgent(projectRoot, stage);
+  } else {
+    // Use legacy validation
+    if (useAgent && !agentExists) {
+      logWarning('Validation agent not found, using legacy validation');
+    }
+    return runLegacyValidation(projectRoot, stage);
+  }
 }
 
 /**

@@ -18,6 +18,7 @@ import {
   GitConfigSchema,
   OutputValidationConfigSchema,
   TechStackConfigSchema,
+  AgentConfigSchema,
 } from '../../src/types/config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -65,6 +66,11 @@ const schemas = {
     schema: TechStackConfigSchema,
     title: 'Tech Stack Configuration',
     description: 'Tech stack preset and provider configuration',
+  },
+  agent: {
+    schema: AgentConfigSchema,
+    title: 'Agent Configuration',
+    description: 'Sub-agent definition for specialized tasks',
   },
 };
 
